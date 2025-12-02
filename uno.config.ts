@@ -1,0 +1,44 @@
+import {
+  defineConfig,
+  presetUno,
+  presetAttributify,
+  presetIcons,
+  transformerDirectives,
+  transformerVariantGroup,
+} from 'unocss'
+
+
+export default defineConfig({
+  presets: [
+    presetUno(),
+    presetAttributify(),
+    presetIcons({}),
+  ],
+  transformers: [
+    transformerDirectives(),
+    transformerVariantGroup(),
+  ],
+  theme: {
+    colors: {
+      // 使用 CSS 变量以支持深色模式
+      primary: 'var(--color-primary)',
+      secondary: 'var(--color-muted)',
+      accent: 'var(--color-primary)',
+      background: 'var(--color-background)',
+      foreground: 'var(--color-foreground)',
+      card: 'var(--color-card)',
+      muted: 'var(--color-muted)',
+      border: 'var(--color-border)',
+    },
+    fontFamily: {
+      sans: ['Open Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+      mono: ['Geist Mono', 'SF Mono', 'Monaco', 'Consolas', 'monospace'],
+    },
+  },
+  shortcuts: {
+    'btn': 'px-6 py-3 bg-primary text-background hover:opacity-80 transition-opacity cursor-pointer font-medium text-xs uppercase tracking-wide',
+    'card': 'bg-card border border-border hover:border-primary transition-all duration-200',
+    'section-title': 'text-xs font-mono uppercase tracking-wider text-secondary my-3 mx-6 font-medium',
+    'corner': 'absolute -inset-1 border border-primary rounded-sm opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-75 transition-all duration-200 ease-out pointer-events-none',
+  },
+})

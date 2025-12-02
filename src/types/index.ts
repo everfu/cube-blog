@@ -1,0 +1,50 @@
+// Album types
+export interface AlbumPhoto {
+  label?: string
+  image: string
+  date: string
+}
+
+export interface AlbumCategory {
+  name: string
+  label: string
+  image: string
+  url?: string
+  list?: AlbumPhoto[]
+}
+
+// Hardware types
+export interface HardwareItem {
+  name: string
+  image: string
+  category: string
+  url?: string
+  wishlist?: boolean
+}
+
+// Software types
+export interface SoftwareItem {
+  name: string
+  icon?: string
+  image?: string
+  description: string
+  url?: string
+  recommended?: boolean
+}
+
+export interface SoftwareCategory {
+  name: string
+  items: SoftwareItem[]
+}
+
+// Watched types
+export interface WatchedItem {
+  title: string
+  rating: number
+  year: string
+  country: string
+  genre: string
+  director: string
+  date: string
+  image?: string
+}
