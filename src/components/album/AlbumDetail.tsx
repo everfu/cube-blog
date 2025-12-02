@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import type { AlbumCategory } from '@/types'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import type { AlbumCategory, AlbumPhoto } from '@/types'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
@@ -9,12 +9,6 @@ import 'yet-another-react-lightbox/styles.css'
 interface AlbumDetailProps {
   category: AlbumCategory | null
   onClose: () => void
-}
-
-interface Photo {
-  label?: string
-  image: string
-  date: string
 }
 
 export default function AlbumDetail({ category, onClose }: AlbumDetailProps) {
@@ -25,51 +19,56 @@ export default function AlbumDetail({ category, onClose }: AlbumDetailProps) {
   const [isClosing, setIsClosing] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
 
-  // 关闭时的过渡动画
-  const handleClose = () => {
+  const photos = category?.list ?? []
+
+  const years = useMemo(() => {
+    const uniqueYears = [...new Set(photos.map(p => p.date.split('-')[0]))]
+      .sort((a, b) => Number(b) - Number(a))
+    return ['全部', ...uniqueYears]
+  }, [photos])
+
+  const filteredPhotos = useMemo(() => 
+    selectedYear === '全部' ? photos : photos.filter(p => p.date.startsWith(selectedYear)),
+    [photos, selectedYear]
+  )
+
+  const handleClose = useCallback(() => {
     if (isClosing) return
     setIsClosing(true)
     setIsVisible(false)
-    setTimeout(() => {
-      onClose()
-    }, 300)
-  }
+    setTimeout(onClose, 300)
+  }, [isClosing, onClose])
 
-  // 入场动画 & ESC 键监听
+  const openLightbox = useCallback((index: number) => {
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }, [])
+
+  const closeLightbox = useCallback(() => setLightboxOpen(false), [])
+
+  const selectYear = useCallback((year: string) => {
+    setSelectedYear(year)
+    setAnimationKey(prev => prev + 1)
+  }, [])
+
   useEffect(() => {
-    if (category) {
-      document.body.style.overflow = 'hidden'
-      // 延迟触发入场动画
-      requestAnimationFrame(() => {
-        setIsVisible(true)
-      })
+    if (!category) return
 
-      // ESC 键关闭
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && !lightboxOpen) {
-          handleClose()
-        }
-      }
-      document.addEventListener('keydown', handleKeyDown)
-      return () => {
-        document.body.style.overflow = 'unset'
-        document.removeEventListener('keydown', handleKeyDown)
-      }
+    document.body.style.overflow = 'hidden'
+    requestAnimationFrame(() => setIsVisible(true))
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !lightboxOpen) handleClose()
     }
-  }, [category, lightboxOpen])
+    document.addEventListener('keydown', handleKeyDown)
+    
+    return () => {
+      document.body.style.overflow = 'unset'
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [category, lightboxOpen, handleClose])
 
   if (!category) return null
-
-  // 从 category.list 获取照片数据
-  const photos = category.list || []
-
-  // 获取所有年份
-  const allYears = [...new Set(photos.map(p => p.date.split('-')[0]))].sort((a, b) => Number(b) - Number(a))
-  const years = ['全部', ...allYears]
-
-  const filteredPhotos = selectedYear === '全部' 
-    ? photos 
-    : photos.filter(p => p.date.startsWith(selectedYear))
 
   return (
     <>
@@ -103,10 +102,7 @@ export default function AlbumDetail({ category, onClose }: AlbumDetailProps) {
               {years.map((year) => (
                 <button
                   key={year}
-                  onClick={() => {
-                    setSelectedYear(year)
-                    setAnimationKey(prev => prev + 1)
-                  }}
+                  onClick={() => selectYear(year)}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                     selectedYear === year
                       ? 'bg-white/20 text-white border border-white/30'
@@ -126,10 +122,7 @@ export default function AlbumDetail({ category, onClose }: AlbumDetailProps) {
                 key={index} 
                 className="group cursor-pointer animate-photo-pop"
                 style={{ animationDelay: `${index * 50}ms` }}
-                onClick={() => {
-                  setLightboxIndex(index)
-                  setLightboxOpen(true)
-                }}
+                onClick={() => openLightbox(index)}
               >
                 <div className="relative aspect-[4/3] bg-white/5 overflow-hidden">
                   <img
@@ -159,7 +152,7 @@ export default function AlbumDetail({ category, onClose }: AlbumDetailProps) {
       {/* Lightbox 图片预览 */}
       <Lightbox
         open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
+        close={closeLightbox}
         index={lightboxIndex}
         slides={filteredPhotos.map(photo => ({
           src: photo.image,

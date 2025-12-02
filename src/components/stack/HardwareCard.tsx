@@ -1,9 +1,12 @@
 import Link from 'next/link'
-import { HardwareItem } from '@/data/hardware'
+import type { HardwareItem } from '@/data/hardware'
+import { cn } from '@/lib/utils'
 
 interface HardwareCardProps {
   item: HardwareItem
 }
+
+const CARD_CLASS = 'bg-card border border-border hover:border-primary transition-all duration-200 group overflow-hidden relative'
 
 export default function HardwareCard({ item }: HardwareCardProps) {
   const content = (
@@ -58,7 +61,7 @@ export default function HardwareCard({ item }: HardwareCardProps) {
             className="w-[120px] h-[120px] md:w-[180px] md:h-[180px] object-contain group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <span className="i-lucide-image text-3xl md:text-4xl opacity-20 text-muted"></span>
+          <span className="i-lucide-image text-3xl md:text-4xl opacity-20 text-muted" />
         )}
       </div>
       
@@ -73,21 +76,12 @@ export default function HardwareCard({ item }: HardwareCardProps) {
 
   if (item.url) {
     return (
-      <Link 
-        href={item.url} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="block bg-card border border-border hover:border-primary transition-all duration-200 group overflow-hidden relative"
-      >
+      <Link href={item.url} target="_blank" rel="noopener noreferrer" className={cn('block', CARD_CLASS)}>
         {content}
       </Link>
     )
   }
 
-  return (
-    <div className="bg-card border border-border hover:border-primary transition-all duration-200 group overflow-hidden relative">
-      {content}
-    </div>
-  )
+  return <div className={CARD_CLASS}>{content}</div>
 }
 

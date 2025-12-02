@@ -1,41 +1,13 @@
 import Link from 'next/link'
-import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
-
-interface Post {
-  slug: string
-  title: string
-  date: string
-  excerpt: string
-  tags?: string[]
-  cover?: string
-  category?: string
-  recent?: boolean
-}
+import type { PostMetadata } from '@/lib/posts'
+import { formatDate, getCategoryColor } from '@/lib/utils'
 
 interface PostCardSmallProps {
-  post: Post
-}
-
-// 分类颜色映射
-const getCategoryColor = (category?: string) => {
-  switch (category?.toUpperCase()) {
-    case 'TECH':
-      return 'text-blue-400'
-    case 'DAILY':
-      return 'text-purple-400'
-    case 'THOUGHTS':
-      return 'text-red-400'
-    default:
-      return 'text-muted'
-  }
+  post: PostMetadata
 }
 
 export default function PostCardSmall({ post }: PostCardSmallProps) {
-  const timeAgo = formatDistanceToNow(new Date(post.date), { 
-    addSuffix: false,
-    locale: zhCN 
-  })
+  const dateStr = formatDate(post.date)
 
   return (
     <Link href={`/posts/${post.slug}`} className="block">
@@ -57,7 +29,7 @@ export default function PostCardSmall({ post }: PostCardSmallProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <time className="text-xs text-muted">
-              {timeAgo}
+              {dateStr}
             </time>
             <span className={`text-[10px] font-bold uppercase tracking-wide ${getCategoryColor(post.category)}`}>
               {post.category || 'DAILY'}

@@ -1,46 +1,43 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import type { PostMetadata } from '@/lib/posts'
 import PostCardSmall from './PostCardSmall'
-import { PostMetadata } from '@/lib/posts'
+
+const POSTS_PER_PAGE = 8
+const SCROLL_THRESHOLD = 1000
 
 interface PostsClientProps {
   posts: PostMetadata[]
 }
 
 export default function PostsClient({ posts }: PostsClientProps) {
-  const [displayedPosts, setDisplayedPosts] = useState(posts.slice(0, 8))
+  const [loadedCount, setLoadedCount] = useState(POSTS_PER_PAGE)
   const [isLoading, setIsLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(posts.length > 8)
 
-  // 加载更多文章
-  const loadMore = () => {
+  // 始终使用相同的逻辑，避免 hydration 不匹配
+  const displayedPosts = posts.slice(0, loadedCount)
+  const hasMore = loadedCount < posts.length
+
+  const loadMore = useCallback(() => {
     if (isLoading || !hasMore) return
-    
     setIsLoading(true)
-    
-    // 模拟加载延迟
     setTimeout(() => {
-      const currentLength = displayedPosts.length
-      const nextPosts = posts.slice(currentLength, currentLength + 8)
-      
-      setDisplayedPosts(prev => [...prev, ...nextPosts])
-      setHasMore(currentLength + 8 < posts.length)
+      setLoadedCount(prev => Math.min(prev + POSTS_PER_PAGE, posts.length))
       setIsLoading(false)
-    }, 500)
-  }
+    }, 300)
+  }, [isLoading, hasMore, posts.length])
 
-  // 滚动监听
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+      const { scrollTop, offsetHeight } = document.documentElement
+      if (window.innerHeight + scrollTop >= offsetHeight - SCROLL_THRESHOLD) {
         loadMore()
       }
     }
-
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [displayedPosts, isLoading, hasMore])
+  }, [loadMore])
 
   return (
     <>
@@ -53,20 +50,17 @@ export default function PostsClient({ posts }: PostsClientProps) {
         ))}
       </div>
 
-      {/* 加载更多按钮和状态 */}
       {isLoading && (
         <div className="text-center py-8">
           <div className="inline-flex items-center gap-2 text-muted">
-            <div className="w-4 h-4 border-2 border-muted border-t-primary rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-muted border-t-primary rounded-full animate-spin" />
             <span className="text-sm">加载中...</span>
           </div>
         </div>
       )}
 
       {!hasMore && displayedPosts.length > 0 && (
-        <div className="text-center py-8">
-          <span className="text-sm text-muted">已显示全部文章</span>
-        </div>
+        <div className="text-center py-8 text-sm text-muted">已显示全部文章</div>
       )}
     </>
   )

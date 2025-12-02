@@ -1,6 +1,12 @@
 import Link from 'next/link'
 import { SectionDivider } from '@/components/common'
 
+const SOCIAL_LINKS = [
+  { href: 'https://github.com/everfu', icon: 'i-lucide-github', label: 'GitHub', external: true },
+  { href: 'https://twitter.com/everfu8', icon: 'i-lucide-twitter', label: 'Twitter', external: true },
+  { href: '/atom.xml', icon: 'i-lucide-rss', label: 'Atom Feed', external: false },
+] as const
+
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -11,37 +17,23 @@ export default function Footer() {
       </div>
       <div className="max-w-[780px] mx-auto px-4 md:px-8 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-xs text-muted">
+          <p className="text-xs text-muted">
             © 2022 - {currentYear} Fuever. All rights reserved.
-          </div>
+          </p>
           
-          <div className="flex items-center gap-4">
-            <Link 
-              href="https://github.com/everfu" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted hover:opacity-60 transition-opacity"
-              aria-label="GitHub"
-            >
-              <div className="i-lucide-github text-base"></div>
-            </Link>
-            <Link 
-              href="https://twitter.com/everfu8" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted hover:opacity-60 transition-opacity"
-              aria-label="Twitter"
-            >
-              <div className="i-lucide-twitter text-base"></div>
-            </Link>
-            <Link 
-              href="/atom.xml" 
-              className="text-muted hover:opacity-60 transition-opacity"
-              aria-label="Atom Feed"
-            >
-              <div className="i-lucide-rss text-base"></div>
-            </Link>
-          </div>
+          <nav className="flex items-center gap-4">
+            {SOCIAL_LINKS.map(({ href, icon, label, external }) => (
+              <Link
+                key={label}
+                href={href}
+                {...(external && { target: '_blank', rel: 'noopener noreferrer' })}
+                className="text-muted hover:opacity-60 transition-opacity"
+                aria-label={label}
+              >
+                <div className={`${icon} text-base`} />
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </footer>

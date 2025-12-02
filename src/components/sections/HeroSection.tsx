@@ -27,7 +27,7 @@ export default function HeroSection() {
               rel="noopener noreferrer"
               className="inline-block border border-foreground bg-white px-3 py-2 transition-colors cursor-pointer font-medium text-xs uppercase tracking-wide relative group text-black rounded-sm"
             >
-              <span className='corner'></span>
+              <span className="corner" />
               ABOUT ME
             </Link>
           </div>

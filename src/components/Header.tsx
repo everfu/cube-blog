@@ -1,110 +1,40 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { SectionDivider } from '@/components/common'
+import Logo from './Logo'
+
+const NAV_ITEMS = [
+  { name: 'POSTS', href: '/posts' },
+  { name: 'STACK', href: '/stack' },
+  { name: 'ALBUM', href: '/album' },
+] as const
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
-  const navItems = [
-    { name: 'POSTS', href: '/posts' },
-    { name: 'STACK', href: '/stack' },
-    { name: 'ALBUM', href: '/album' },
-  ]
+  
+  const toggleMenu = useCallback(() => setIsMenuOpen(prev => !prev), [])
+  const closeMenu = useCallback(() => setIsMenuOpen(false), [])
 
   return (
     <header className="max-w-[780px] mx-auto relative z-10">
       <nav className="px-2 md:px-4 py-2">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center hover:opacity-60 transition-opacity">
-            <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="overflow-visible">
-              {/* e */}
-              <path 
-                d="M6 24c0-4 3-7 7-7s7 3 7 7-3 7-7 7c-2 0-4-1-5-2"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-                className="animate-draw"
-                style={{ 
-                  strokeDasharray: 50,
-                  strokeDashoffset: 50,
-                  animation: 'draw 1.2s ease forwards'
-                }}
-              />
-              {/* e 中横线 */}
-              <path 
-                d="M6 24h14"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-                style={{ 
-                  strokeDasharray: 14,
-                  strokeDashoffset: 14,
-                  animation: 'draw 0.6s ease forwards 0.4s'
-                }}
-              />
-              {/* f */}
-              <path 
-                d="M24 31V20c0-3 2-5 5-5"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-                style={{ 
-                  strokeDasharray: 20,
-                  strokeDashoffset: 20,
-                  animation: 'draw 0.8s ease forwards 0.6s'
-                }}
-              />
-              {/* f 横线 */}
-              <path 
-                d="M22 22h7"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-                style={{ 
-                  strokeDasharray: 7,
-                  strokeDashoffset: 7,
-                  animation: 'draw 0.4s ease forwards 1s'
-                }}
-              />
-              {/* u */}
-              <path 
-                d="M34 17v10c0 2.5 2 4 4.5 4s4.5-1.5 4.5-4V17"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-                style={{ 
-                  strokeDasharray: 30,
-                  strokeDashoffset: 30,
-                  animation: 'draw 1s ease forwards 1.2s'
-                }}
-              />
-              <style>{`
-                @keyframes draw {
-                  to {
-                    stroke-dashoffset: 0;
-                  }
-                }
-              `}</style>
-            </svg>
+            <Logo />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
+            {NAV_ITEMS.map((item, index) => (
               <Link 
                 key={item.name}
                 href={item.href}
-                className="relative px-2 py-1 text-xs font-medium tracking-wide text-foreground transition-opacity group"
+                className="relative px-2 py-1 text-xs font-medium tracking-wide text-foreground transition-opacity group animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <span className='corner'></span>
+                <span className="corner" />
                 {item.name}
               </Link>
             ))}
@@ -112,30 +42,44 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 relative w-8 h-8"
+            onClick={toggleMenu}
             aria-label="Toggle menu"
           >
-            <span className={`i-lucide-${isMenuOpen ? 'x' : 'menu'} text-lg`}></span>
+            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'}`}>
+              <div className="i-lucide-x text-lg" />
+            </div>
+            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isMenuOpen ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'}`}>
+              <div className="i-lucide-menu text-lg" />
+            </div>
           </button>
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-4 space-y-3 pb-4 border-t border-border pt-4">
-            {navItems.map((item) => (
+        <div 
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="mt-4 ml-4 pb-4 border-t border-border pt-4 flex flex-row gap-5">
+            {NAV_ITEMS.map((item, index) => (
               <Link 
                 key={item.name}
                 href={item.href}
-                className="relative block text-sm font-medium hover:opacity-60 transition-opacity group"
-                onClick={() => setIsMenuOpen(false)}
+                className="relative text-sm font-medium hover:opacity-60 transition-all group"
+                style={{ 
+                  transitionDelay: isMenuOpen ? `${index * 50}ms` : '0ms',
+                  transform: isMenuOpen ? 'translateY(0)' : 'translateY(-10px)',
+                  opacity: isMenuOpen ? 1 : 0
+                }}
+                onClick={closeMenu}
               >
-                <span className='corner'></span>
+                <span className="corner" />
                 {item.name}
               </Link>
             ))}
           </div>
-        )}
+        </div>
       </nav>
       <SectionDivider />
     </header>

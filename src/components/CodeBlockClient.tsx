@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useCallback } from 'react'
 
 interface CodeBlockClientProps {
   html: string
@@ -8,8 +8,8 @@ interface CodeBlockClientProps {
   lang: string
 }
 
-const COLLAPSE_THRESHOLD = 15 // 超过 15 行折叠
-const COLLAPSED_HEIGHT = 300 // 折叠后高度 (px)
+const COLLAPSE_THRESHOLD = 15
+const COLLAPSED_HEIGHT = 300
 
 export function CodeBlockClient({ html, code, lang }: CodeBlockClientProps) {
   const [isHovered, setIsHovered] = useState(false)
@@ -21,7 +21,7 @@ export function CodeBlockClient({ html, code, lang }: CodeBlockClientProps) {
   const lineCount = useMemo(() => code.split('\n').length, [code])
   const shouldCollapse = lineCount > COLLAPSE_THRESHOLD
 
-  const handleCopy = async () => {
+  const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(code)
       setCopied(true)
@@ -29,21 +29,18 @@ export function CodeBlockClient({ html, code, lang }: CodeBlockClientProps) {
     } catch (err) {
       console.error('Failed to copy:', err)
     }
-  }
+  }, [code])
 
-  const toggleWrap = () => {
-    setIsWrapped(!isWrapped)
-  }
-
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded)
-  }
+  const toggleWrap = useCallback(() => setIsWrapped(prev => !prev), [])
+  const toggleExpand = useCallback(() => setIsExpanded(prev => !prev), [])
+  const onMouseEnter = useCallback(() => setIsHovered(true), [])
+  const onMouseLeave = useCallback(() => setIsHovered(false), [])
 
   return (
     <div 
       className="relative my-4 rounded-lg overflow-hidden border border-border text-sm group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {/* 语言标签 - 默认显示，悬停隐藏 */}
       <span 

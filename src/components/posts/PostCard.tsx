@@ -1,26 +1,13 @@
 import Link from 'next/link'
-import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
-
-interface Post {
-  slug: string
-  title: string
-  date: string
-  excerpt: string
-  tags?: string[]
-  cover?: string
-  category?: string
-}
+import type { PostMetadata } from '@/lib/posts'
+import { formatDate } from '@/lib/utils'
 
 interface PostCardProps {
-  post: Post
+  post: PostMetadata
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const timeAgo = formatDistanceToNow(new Date(post.date), { 
-    addSuffix: false,
-    locale: zhCN 
-  })
+  const dateStr = formatDate(post.date)
 
   return (
     <Link href={`/posts/${post.slug}`} className="block">
@@ -42,7 +29,7 @@ export default function PostCard({ post }: PostCardProps) {
             <span className="text-badge text-red-400 uppercase tracking-wide">
               NEW
             </span>
-            <time className="text-xs text-muted group-hover:text-white transition-colors duration-500">{timeAgo}</time>
+            <time className="text-xs text-muted group-hover:text-white transition-colors duration-500">{dateStr}</time>
           </div>
           <h3 className="text-sm font-normal leading-relaxed text-foreground group-hover:text-white transition-all duration-500 flex-1">
             {post.title}

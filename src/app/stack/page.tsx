@@ -51,9 +51,9 @@ export default function StackPage() {
               <div key={category.name}>
                 {/* 标题居中，两侧虚线 */}
                 <div className="flex items-center justify-center mb-4">
-                  <div className="flex-1 border-t border-dashed border-border"></div>
+                  <div className="flex-1 border-t border-dashed border-border" />
                   <h3 className="text-base font-bold px-4 text-foreground">{category.name}</h3>
-                  <div className="flex-1 border-t border-dashed border-border"></div>
+                  <div className="flex-1 border-t border-dashed border-border" />
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   {category.items.map((item) => (

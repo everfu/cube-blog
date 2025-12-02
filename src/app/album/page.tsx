@@ -1,26 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import type { AlbumCategory } from '@/types'
+import { formatDate } from '@/lib/utils'
 import { SectionDivider } from '@/components/common'
 import { AlbumCard, AlbumDetail } from '@/components/album'
 import { albumCategories, albumLastUpdated } from '@/data/album'
-import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
-import type { AlbumCategory } from '@/types'
+
+// 使用固定格式日期，避免 hydration 问题
+const lastUpdatedDate = formatDate(albumLastUpdated)
 
 export default function AlbumPage() {
   const [selectedCategory, setSelectedCategory] = useState<AlbumCategory | null>(null)
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
-  
-  const timeAgo = formatDistanceToNow(new Date(albumLastUpdated), { addSuffix: true, locale: zhCN })
 
-  const handleCardClick = (category: AlbumCategory) => {
+  const handleCardClick = useCallback((category: AlbumCategory) => {
     setSelectedCategory(category)
-  }
+  }, [])
 
-  const handleClose = () => {
-    setSelectedCategory(null)
-  }
+  const handleClose = useCallback(() => setSelectedCategory(null), [])
+  const clearHover = useCallback(() => setHoveredCategory(null), [])
 
   return (
     <div className="space-y-0">
@@ -28,7 +27,7 @@ export default function AlbumPage() {
       <section>
         <h2 className="section-title">
           01 / <span className="text-foreground">ALBUM</span>
-          <span className="text-muted text-sm font-normal ml-2">(⏱ {timeAgo})</span>
+          <span className="text-muted text-sm font-normal ml-2">(⏱ {lastUpdatedDate})</span>
         </h2>
         <SectionDivider />
         
@@ -45,7 +44,7 @@ export default function AlbumPage() {
       <section>
         <div 
           className="grid grid-cols-2 gap-4 mx-4 md:mx-8 my-8"
-          onMouseLeave={() => setHoveredCategory(null)}
+          onMouseLeave={clearHover}
         >
           {albumCategories.map((category) => (
             <AlbumCard 

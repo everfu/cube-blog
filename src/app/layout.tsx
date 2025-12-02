@@ -57,8 +57,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN">
-      <body className="min-h-screen relative px-4 md:px-0">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <body className="min-h-screen relative px-4 md:px-0" suppressHydrationWarning>
         <Header />
         <main className="max-w-[780px] mx-auto relative z-10">
           {children}

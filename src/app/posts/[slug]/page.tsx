@@ -1,40 +1,20 @@
 import { notFound } from 'next/navigation'
-import { getAllPosts, getPostBySlug } from '@/lib/posts'
-import { MDXRemote } from 'next-mdx-remote/rsc'
-import { formatDistanceToNow, format } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
-import { SectionDivider } from '@/components/common'
-import { mdxComponents } from '@/components/MDXComponents'
+import { format } from 'date-fns'
 import Link from 'next/link'
+import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import remarkDirective from 'remark-directive'
+import { getAllPosts, getPostBySlug } from '@/lib/posts'
 import { remarkCallout } from '@/lib/remarkCallout'
+import { formatDate, getReadingTime, getCategoryColorWithBorder } from '@/lib/utils'
+import { SectionDivider } from '@/components/common'
+import { mdxComponents } from '@/components/MDXComponents'
 import Comment from '@/components/Comment'
 
-// 计算阅读时间（假设每分钟阅读 300 字）
-function getReadingTime(content: string): number {
-  const words = content.length
-  return Math.max(1, Math.ceil(words / 300))
-}
-
-// 分类颜色映射
-function getCategoryColor(category?: string): string {
-  switch (category?.toUpperCase()) {
-    case 'TECH':
-      return 'text-blue-400 border-blue-400/30'
-    case 'DAILY':
-      return 'text-purple-400 border-purple-400/30'
-    case 'THOUGHTS':
-      return 'text-red-400 border-red-400/30'
-    default:
-      return 'text-muted border-border'
-  }
-}
-
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -47,7 +27,8 @@ export async function generateStaticParams() {
 const SITE_URL = 'https://blog.efu.me'
 
 export async function generateMetadata({ params }: PageProps) {
-  const post = getPostBySlug(params.slug)
+  const { slug } = await params
+  const post = getPostBySlug(slug)
   
   if (!post) {
     return {
@@ -91,20 +72,20 @@ export async function generateMetadata({ params }: PageProps) {
   }
 }
 
-export default function PostPage({ params }: PageProps) {
+export default async function PostPage({ params }: PageProps) {
+  const { slug } = await params
   const allPosts = getAllPosts()
-  const post = getPostBySlug(params.slug)
+  const post = getPostBySlug(slug)
 
   if (!post) {
     notFound()
   }
 
   // 获取下一篇文章
-  const currentIndex = allPosts.findIndex(p => p.slug === params.slug)
+  const currentIndex = allPosts.findIndex(p => p.slug === slug)
   const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null
 
-  // 计算相对时间和阅读时间
-  const timeAgo = formatDistanceToNow(new Date(post.date), { addSuffix: true, locale: zhCN })
+  const dateStr = formatDate(post.date)
   const readingTime = getReadingTime(post.content)
 
   return (
@@ -116,7 +97,7 @@ export default function PostPage({ params }: PageProps) {
             href="/posts"
             className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
           >
-            <span className="i-lucide-arrow-left text-xs"></span>
+            <span className="i-lucide-arrow-left text-xs" />
             Back to Posts
           </Link>
         </div>
@@ -129,15 +110,15 @@ export default function PostPage({ params }: PageProps) {
           {/* Meta Info Row */}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted mb-4">
             <span className="inline-flex items-center gap-1">
-              <span className="i-lucide-calendar text-[10px]"></span>
-              {timeAgo}
+              <span className="i-lucide-calendar text-[10px]" />
+              {dateStr}
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="i-lucide-clock text-[10px]"></span>
+              <span className="i-lucide-clock text-[10px]" />
               {readingTime} 分钟
             </span>
             {post.category && (
-              <span className={`px-2 py-0.5 border rounded text-xs ${getCategoryColor(post.category)}`}>
+              <span className={`px-2 py-0.5 border rounded text-xs ${getCategoryColorWithBorder(post.category)}`}>
                 {post.category}
               </span>
             )}
@@ -168,7 +149,7 @@ export default function PostPage({ params }: PageProps) {
               </div>
             ) : (
               <div className="hidden md:flex w-32 h-24 flex-shrink-0 bg-card rounded items-center justify-center">
-                <span className="i-lucide-image text-2xl text-muted"></span>
+                <span className="i-lucide-image text-2xl text-muted" />
               </div>
             )}
           </div>
@@ -210,7 +191,7 @@ export default function PostPage({ params }: PageProps) {
                   {format(new Date(nextPost.date), 'MMM dd, yyyy')}
                 </span>
               </div>
-              <span className="i-lucide-arrow-right text-muted group-hover:text-foreground transition-colors"></span>
+              <span className="i-lucide-arrow-right text-muted group-hover:text-foreground transition-colors" />
             </div>
           </Link>
           <SectionDivider />

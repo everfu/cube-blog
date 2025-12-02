@@ -40,5 +40,22 @@ export default defineConfig({
     'card': 'bg-card border border-border hover:border-primary transition-all duration-200',
     'section-title': 'text-xs font-mono uppercase tracking-wider text-secondary my-3 mx-6 font-medium',
     'corner': 'absolute -inset-1 border border-primary rounded-sm opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-75 transition-all duration-200 ease-out pointer-events-none',
+    'animate-fade-in-up': 'opacity-0 animate-[fade-in-up_0.5s_ease_forwards]',
   },
+  preflights: [
+    {
+      getCSS: () => `
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `,
+    },
+  ],
 })

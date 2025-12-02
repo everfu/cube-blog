@@ -1,14 +1,40 @@
-import { WatchedItem } from '@/data/watched'
+import type { WatchedItem } from '@/data/watched'
 
 interface WatchedCardProps {
   item: WatchedItem
 }
 
-export default function WatchedCard({ item }: WatchedCardProps) {
-  // 生成星星评分
-  const fullStars = Math.floor(item.rating / 2)
-  const hasHalfStar = item.rating % 2 >= 1
+function getStarRating(rating: number) {
+  const fullStars = Math.floor(rating / 2)
+  const hasHalfStar = rating % 2 >= 1
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0)
+  return { fullStars, hasHalfStar, emptyStars }
+}
+
+function StarRating({ rating, variant = 'default' }: { rating: number; variant?: 'default' | 'light' }) {
+  const { fullStars, hasHalfStar, emptyStars } = getStarRating(rating)
+  const emptyClass = variant === 'light' ? 'text-gray-400 opacity-50' : 'text-muted opacity-30'
+  
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-0.5">
+        {Array.from({ length: fullStars }, (_, i) => (
+          <span key={`full-${i}`} className="i-lucide-star text-yellow-500 text-sm" style={{ fill: 'currentColor' }} />
+        ))}
+        {hasHalfStar && (
+          <span className="i-lucide-star-half text-yellow-500 text-sm" style={{ fill: 'currentColor' }} />
+        )}
+        {Array.from({ length: emptyStars }, (_, i) => (
+          <span key={`empty-${i}`} className={`i-lucide-star text-sm ${emptyClass}`} />
+        ))}
+      </div>
+      <span className={`text-sm ${variant === 'light' ? 'text-gray-300' : 'text-muted'}`}>{rating}</span>
+    </div>
+  )
+}
+
+export default function WatchedCard({ item }: WatchedCardProps) {
+  const details = `${item.year} / ${item.country} / ${item.genre} / ${item.director}`
 
   return (
     <div className="bg-card border border-border hover:border-primary transition-all duration-200 group overflow-hidden">
@@ -24,7 +50,7 @@ export default function WatchedCard({ item }: WatchedCardProps) {
       >
         {!item.image && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="i-lucide-film text-4xl opacity-20 text-muted"></span>
+            <span className="i-lucide-film text-4xl opacity-20 text-muted" />
           </div>
         )}
         
@@ -32,80 +58,35 @@ export default function WatchedCard({ item }: WatchedCardProps) {
           <h3 className="text-base font-medium mb-2 group-hover:opacity-70 transition-opacity">
             {item.title}
           </h3>
-
-          {/* 评分 */}
-          <div className="flex items-center gap-2 mb-2">
-            <div className="flex items-center gap-0.5">
-              {[...Array(fullStars)].map((_, i) => (
-                <span key={`full-${i}`} className="i-lucide-star text-yellow-500 text-sm" style={{ fill: 'currentColor' }}></span>
-              ))}
-              {hasHalfStar && (
-                <span className="i-lucide-star-half text-yellow-500 text-sm" style={{ fill: 'currentColor' }}></span>
-              )}
-              {[...Array(emptyStars)].map((_, i) => (
-                <span key={`empty-${i}`} className="i-lucide-star text-gray-400 text-sm opacity-50"></span>
-              ))}
-            </div>
-            <span className="text-sm text-gray-300">{item.rating}</span>
+          <div className="mb-2">
+            <StarRating rating={item.rating} variant="light" />
           </div>
-
-          {/* 详细信息 */}
-          <p className="text-xs text-gray-300 leading-relaxed mb-1">
-            {item.year} / {item.country} / {item.genre} / {item.director}
-          </p>
-
-          {/* 观看日期 */}
-          <div className="text-xs text-gray-400">
-            {item.date}
-          </div>
+          <p className="text-xs text-gray-300 leading-relaxed mb-1">{details}</p>
+          <p className="text-xs text-gray-400">{item.date}</p>
         </div>
       </div>
 
       {/* 桌面端：横向布局 */}
       <div className="hidden md:flex gap-4 p-4">
-        {/* 海报图片 */}
         <div className="w-24 h-36 bg-muted flex-shrink-0 flex items-center justify-center overflow-hidden">
           {item.image ? (
             <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
           ) : (
-            <span className="i-lucide-film text-3xl opacity-20 text-muted"></span>
+            <span className="i-lucide-film text-3xl opacity-20 text-muted" />
           )}
         </div>
 
-        {/* 信息部分 */}
         <div className="flex-1 flex flex-col justify-between text-foreground">
-          {/* 标题 */}
           <div>
             <h3 className="text-base font-medium mb-2 group-hover:opacity-70 transition-opacity">
               {item.title}
             </h3>
-
-            {/* 评分 */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center gap-0.5">
-                {[...Array(fullStars)].map((_, i) => (
-                  <span key={`full-${i}`} className="i-lucide-star text-yellow-500 text-sm" style={{ fill: 'currentColor' }}></span>
-                ))}
-                {hasHalfStar && (
-                  <span className="i-lucide-star-half text-yellow-500 text-sm" style={{ fill: 'currentColor' }}></span>
-                )}
-                {[...Array(emptyStars)].map((_, i) => (
-                  <span key={`empty-${i}`} className="i-lucide-star text-muted text-sm opacity-30"></span>
-                ))}
-              </div>
-              <span className="text-sm text-muted">{item.rating}</span>
+            <div className="mb-2">
+              <StarRating rating={item.rating} />
             </div>
-
-            {/* 详细信息 */}
-            <p className="text-xs text-muted leading-relaxed">
-              {item.year} / {item.country} / {item.genre} / {item.director}
-            </p>
+            <p className="text-xs text-muted leading-relaxed">{details}</p>
           </div>
-
-          {/* 观看日期 */}
-          <div className="text-xs text-muted opacity-70 mt-2">
-            {item.date}
-          </div>
+          <p className="text-xs text-muted opacity-70 mt-2">{item.date}</p>
         </div>
       </div>
     </div>
