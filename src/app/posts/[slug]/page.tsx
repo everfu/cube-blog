@@ -10,6 +10,7 @@ import { formatDate, getReadingTime, getCategoryColorWithBorder } from '@/lib/ut
 import { SectionDivider } from '@/components/common'
 import { mdxComponents } from '@/components/MDXComponents'
 import Comment from '@/components/Comment'
+import { siteConfig } from '@/../blog.config'
 
 interface PageProps {
   params: Promise<{
@@ -24,8 +25,6 @@ export async function generateStaticParams() {
   }))
 }
 
-const SITE_URL = 'https://blog.efu.me'
-
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
   const post = getPostBySlug(slug)
@@ -36,20 +35,20 @@ export async function generateMetadata({ params }: PageProps) {
     }
   }
 
-  const postUrl = `${SITE_URL}/posts/${post.slug}`
+  const postUrl = `${siteConfig.url}/posts/${post.slug}`
   const ogImage = post.cover || '/og-image.png'
 
   return {
     title: post.title,
     description: post.excerpt,
-    authors: [{ name: 'Fuever' }],
+    authors: [{ name: siteConfig.author.name }],
     openGraph: {
       type: 'article',
       url: postUrl,
       title: post.title,
       description: post.excerpt,
       publishedTime: new Date(post.date).toISOString(),
-      authors: ['Fuever'],
+      authors: [siteConfig.author.name],
       tags: post.tags,
       images: [
         {
@@ -144,6 +143,8 @@ export default async function PostPage({ params }: PageProps) {
                 <img 
                   src={post.cover} 
                   alt={post.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </div>

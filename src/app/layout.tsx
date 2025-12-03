@@ -3,51 +3,48 @@ import '@unocss/reset/tailwind.css'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-
-const SITE_URL = 'https://blog.efu.me'
-const SITE_NAME = "Fuever's Blog"
-const SITE_DESCRIPTION = 'A nook where thoughts & ideas sometimes echo'
+import { siteConfig } from '@/../blog.config'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: SITE_NAME,
-    template: `%s | ${SITE_NAME}`,
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
   },
-  description: SITE_DESCRIPTION,
-  authors: [{ name: 'Fuever', url: SITE_URL }],
-  creator: 'Fuever',
+  description: siteConfig.description,
+  authors: [{ name: siteConfig.author.name, url: siteConfig.url }],
+  creator: siteConfig.author.name,
   openGraph: {
     type: 'website',
-    locale: 'zh_CN',
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
+    locale: siteConfig.locale.replace('-', '_'),
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.description,
     images: [
       {
-        url: '/og-image.png',
+        url: siteConfig.assets.ogImage,
         width: 1200,
         height: 630,
-        alt: SITE_NAME,
+        alt: siteConfig.name,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    images: ['/og-image.png'],
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [siteConfig.assets.ogImage],
   },
   alternates: {
-    canonical: SITE_URL,
+    canonical: siteConfig.url,
     types: {
-      'application/atom+xml': `${SITE_URL}/atom.xml`,
+      'application/atom+xml': `${siteConfig.url}/atom.xml`,
     },
   },
   icons: {
-    icon: '/favicon-32x32.ico',
-    apple: '/apple-touch-icon.png',
+    icon: siteConfig.assets.favicon,
+    apple: siteConfig.assets.appleTouchIcon,
   },
 }
 
@@ -57,7 +54,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang={siteConfig.locale} suppressHydrationWarning>
       <body className="min-h-screen relative px-4 md:px-0" suppressHydrationWarning>
         <Header />
         <main className="max-w-[780px] mx-auto relative z-10">

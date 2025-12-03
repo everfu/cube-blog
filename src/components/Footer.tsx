@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { SectionDivider } from '@/components/common'
+import { siteConfig } from '@/../blog.config'
 
 const SOCIAL_LINKS = [
-  { href: 'https://github.com/everfu', icon: 'i-lucide-github', label: 'GitHub', external: true },
-  { href: 'https://twitter.com/everfu8', icon: 'i-lucide-twitter', label: 'Twitter', external: true },
+  { href: siteConfig.social.github, icon: 'i-lucide-github', label: 'GitHub', external: true },
+  { href: siteConfig.social.twitter, icon: 'i-lucide-twitter', label: 'Twitter', external: true },
   { href: '/atom.xml', icon: 'i-lucide-rss', label: 'Atom Feed', external: false },
 ] as const
 
@@ -18,7 +19,7 @@ export default function Footer() {
       <div className="max-w-[780px] mx-auto px-4 md:px-8 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted">
-            © 2022 - {currentYear} Fuever. All rights reserved.
+            © {siteConfig.copyright.startYear} - {currentYear} {siteConfig.author.name}. All rights reserved.
           </p>
           
           <nav className="flex items-center gap-4">

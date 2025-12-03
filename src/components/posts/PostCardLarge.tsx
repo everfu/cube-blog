@@ -43,6 +43,8 @@ export default function PostCardLarge({ post }: PostCardLargeProps) {
               <img 
                 src={post.cover} 
                 alt={post.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             ) : (

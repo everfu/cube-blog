@@ -397,3 +397,7 @@ body::before {
 .tk-icon.__comments {
   color: var(--color-primary) !important;
 }
+
+.tk-action-icon, .tk-action-link {
+  color: var(--color-primary) !important;
+}

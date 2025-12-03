@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SectionDivider } from '@/components/common'
+import { siteConfig } from '@/../blog.config'
 
 export default function HeroSection() {
   return (
@@ -22,7 +23,7 @@ export default function HeroSection() {
           
           <div className="flex gap-3">
             <Link 
-              href="https://efu.me"
+              href={siteConfig.author.url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block border border-foreground bg-white px-3 py-2 transition-colors cursor-pointer font-medium text-xs uppercase tracking-wide relative group text-black rounded-sm"
@@ -37,8 +38,8 @@ export default function HeroSection() {
         <div className="text-sm text-muted leading-relaxed">
           <p>
             Self-taught developer passionate about open source. 
-            Creator of <span className="font-medium text-foreground">18 repositories</span> with 
-            <span className="font-medium text-foreground"> 1,106 stars</span> on GitHub.
+            Creator of <span className="font-medium text-foreground">{siteConfig.stats.repositories} repositories</span> with 
+            <span className="font-medium text-foreground"> {siteConfig.stats.stars.toLocaleString()} stars</span> on GitHub.
           </p>
           <p className="mt-4">
             Minimalist obsessed with speed and lightweight solutions. 

@@ -128,6 +128,8 @@ export default function AlbumDetail({ category, onClose }: AlbumDetailProps) {
                   <img
                     src={photo.image}
                     alt={photo.label || ''}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   {/* 左下角文字 */}

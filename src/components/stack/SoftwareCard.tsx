@@ -7,7 +7,7 @@ interface SoftwareCardProps {
 
 function ItemIcon({ icon, image, name }: Pick<SoftwareItem, 'icon' | 'image' | 'name'>) {
   if (icon) return <span className={`${icon} text-xl`} />
-  if (image) return <img src={image} alt={name} className="w-full h-full object-cover rounded" />
+  if (image) return <img src={image} alt={name} loading="lazy" decoding="async" className="w-full h-full object-cover rounded" />
   return <span className="i-lucide-package text-xl opacity-20 text-muted" />
 }
 

@@ -22,6 +22,8 @@ export default function AlbumCard({ category, onClick, onHover, isBlurred }: Alb
         <img 
           src={category.image} 
           alt={category.label}
+          loading="lazy"
+          decoding="async"
           className="w-full h-[120px] object-cover group-hover:scale-105 transition-transform duration-500"
         />
       ) : (

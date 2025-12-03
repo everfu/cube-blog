@@ -58,6 +58,8 @@ export default function HardwareCard({ item }: HardwareCardProps) {
           <img 
             src={item.image} 
             alt={item.name}
+            loading="lazy"
+            decoding="async"
             className="w-[120px] h-[120px] md:w-[180px] md:h-[180px] object-contain group-hover:scale-105 transition-transform duration-300"
           />
         ) : (

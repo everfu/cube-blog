@@ -1,19 +1,20 @@
 import { getAllPosts, type PostMetadata } from '@/lib/posts'
+import { siteConfig } from '@/../blog.config'
 
 export const dynamic = 'force-dynamic'
 
-// Site Configuration
+// 从 siteConfig 构建 CONFIG
 const CONFIG = {
-  url: 'https://blog.efu.me',
-  title: "Fuever'blog",
-  description: 'A nook where thoughts & ideas sometimes echo',
+  url: siteConfig.url,
+  title: siteConfig.title,
+  description: siteConfig.description,
   author: {
-    name: 'Fuever',
-    email: 'o@efu.me',
-    uri: 'https://blog.efu.me',
+    name: siteConfig.author.name,
+    email: siteConfig.author.email,
+    uri: siteConfig.author.url,
   },
-  avatar: '/mstile-150x150.png',
-  favicon: '/favicon-32x32.png',
+  avatar: siteConfig.assets.avatar,
+  favicon: siteConfig.assets.favicon,
 } as const
 
 // XML escape helper
@@ -74,7 +75,7 @@ function buildFeed(posts: PostMetadata[]): string {
   </author>
   <icon>${CONFIG.url}${CONFIG.favicon}</icon>
   <logo>${CONFIG.url}${CONFIG.avatar}</logo>
-  <rights>© 2022 - ${currentYear} ${escapeXml(CONFIG.author.name)}</rights>
+  <rights>© ${siteConfig.copyright.startYear} - ${currentYear} ${escapeXml(CONFIG.author.name)}</rights>
   <generator uri="https://nextjs.org">Next.js</generator>${entries}
 </feed>`
 }
