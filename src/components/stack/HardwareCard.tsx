@@ -55,12 +55,11 @@ export default function HardwareCard({ item }: HardwareCardProps) {
       {/* 产品图片 - 居中，移动端120x120，桌面端180x180 */}
       <div className="flex-1 flex items-center justify-center relative z-10">
         {item.image ? (
-          <img 
-            src={item.image} 
-            alt={item.name}
-            loading="lazy"
-            decoding="async"
-            className="w-[120px] h-[120px] md:w-[180px] md:h-[180px] object-contain group-hover:scale-105 transition-transform duration-300"
+          <figure 
+            role="img"
+            aria-label={item.name}
+            className="w-[120px] h-[120px] md:w-[180px] md:h-[180px] bg-contain bg-center bg-no-repeat group-hover:scale-105 transition-transform duration-300"
+            style={{ backgroundImage: `url(${item.image})` }}
           />
         ) : (
           <span className="i-lucide-image text-3xl md:text-4xl opacity-20 text-muted" />

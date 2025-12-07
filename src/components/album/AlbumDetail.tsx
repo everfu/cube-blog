@@ -125,12 +125,11 @@ export default function AlbumDetail({ category, onClose }: AlbumDetailProps) {
                 onClick={() => openLightbox(index)}
               >
                 <div className="relative aspect-[4/3] bg-white/5 overflow-hidden">
-                  <img
-                    src={photo.image}
-                    alt={photo.label || ''}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  <figure
+                    role="img"
+                    aria-label={photo.label || ''}
+                    className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                    style={{ backgroundImage: `url(${photo.image})` }}
                   />
                   {/* 左下角文字 */}
                   <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
