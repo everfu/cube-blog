@@ -70,7 +70,7 @@ export default function WatchedCard({ item }: WatchedCardProps) {
       <div className="hidden md:flex gap-4 p-4">
         <div className="w-24 h-36 bg-muted flex-shrink-0 flex items-center justify-center overflow-hidden">
           {item.image ? (
-            <img src={item.image} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+            <figure role="img" aria-label={item.title} className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${item.image})` }} />
           ) : (
             <span className="i-lucide-film text-3xl opacity-20 text-muted" />
           )}
