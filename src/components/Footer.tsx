@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SectionDivider } from '@/components/common'
 import { siteConfig } from '@/../blog.config'
+import OnlineCount from '@/components/OnlineCount'
 
 const SOCIAL_LINKS = [
   { href: siteConfig.social.github, icon: 'i-lucide-github', label: 'GitHub', external: true },
@@ -18,9 +19,12 @@ export default function Footer() {
       </div>
       <div className="max-w-[780px] mx-auto px-4 md:px-8 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-muted">
-            © {siteConfig.copyright.startYear} - {currentYear} {siteConfig.author.name}. All rights reserved.
-          </p>
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
+            <p className="text-xs text-muted">
+              {siteConfig.copyright.startYear} - {currentYear} {siteConfig.author.name}. All rights reserved.
+            </p>
+            <OnlineCount />
+          </div>
           
           <nav className="flex items-center gap-4">
             {SOCIAL_LINKS.map(({ href, icon, label, external }) => (

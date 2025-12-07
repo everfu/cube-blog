@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@liveblocks/client": "^3.11.0",
+    "@liveblocks/react": "^3.11.0",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "16.0.6",
