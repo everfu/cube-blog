@@ -6,9 +6,10 @@ import { SectionDivider } from '@/components/common'
 import Logo from './Logo'
 
 const NAV_ITEMS = [
-  { name: 'POSTS', href: '/posts' },
-  { name: 'STACK', href: '/stack' },
-  { name: 'ALBUM', href: '/album' },
+  { name: 'POSTS', href: '/posts', target: '_self' },
+  { name: 'STACK', href: '/stack', target: '_self' },
+  { name: 'ALBUM', href: '/album', target: '_self' },
+  { name: 'LINKS', href: 'https://efu.me/friends', target: '_blank' },
 ] as const
 
 export default function Header() {
@@ -33,6 +34,8 @@ export default function Header() {
                 href={item.href}
                 className="relative px-2 py-1 text-xs font-medium tracking-wide text-foreground transition-opacity group animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
+                target={item.target}
+                rel={item.target === '_blank' ? 'noopener noreferrer' : ''}
               >
                 <span className="corner" />
                 {item.name}
@@ -73,6 +76,8 @@ export default function Header() {
                   opacity: isMenuOpen ? 1 : 0
                 }}
                 onClick={closeMenu}
+                target={item.target}
+                rel={item.target === '_blank' ? 'noopener noreferrer' : ''}
               >
                 <span className="corner" />
                 {item.name}
