@@ -25,7 +25,7 @@ export const hardwareItems: HardwareItem[] = [
     name: 'Beats Solo 4',
     image: 'https://cdn.lightxi.com/cloudreve/uploads/2025/12/07/gIGuYOrD_beats-solo-4.png',
     category: '耳机',
-    url: 'apple.com.cn/shop/product/muw23ch/a'
+    url: 'https://apple.com.cn/shop/product/muw23ch/a'
   },
   {
     name: '零刻 SER6 PRO',
