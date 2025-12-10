@@ -1,8 +1,8 @@
 import type { MDXComponents } from 'mdx/types'
-import Image from 'next/image'
 import Link from 'next/link'
 import { CodeBlock } from './CodeBlock'
 import { Callout } from './Callout'
+import MDXImage from './MDXImage'
 
 // 导出组件对象供 MDXRemote 使用
 export const mdxComponents: MDXComponents = {
@@ -104,20 +104,9 @@ export const mdxComponents: MDXComponents = {
       </div>
     ),
     
-    // 图片 - 带边框和圆角
+    // 图片 - 带 Lightbox 灯箱功能
     img: ({ src, alt }) => (
-      <span className="block my-6">
-        <Image 
-          src={src as string} 
-          alt={alt || ''} 
-          width={800} 
-          height={400} 
-          className="w-full h-auto border border-border"
-        />
-        {alt && (
-          <span className="block text-center text-xs text-muted mt-2">{alt}</span>
-        )}
-      </span>
+      <MDXImage src={src as string} alt={alt || ''} />
     ),
     
     // 表格 - 简洁边框

@@ -12,7 +12,10 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
   experimental: {
     optimizeCss: true,
-  }
+  },
+  images: {
+    unoptimized: true,
+  },
 }
 
 module.exports = withMDX(nextConfig)
