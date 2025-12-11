@@ -136,4 +136,4 @@ Compatible with Netlify, Cloudflare Pages, AWS Amplify, or self-hosted.
 
 ## Credit
 
-thank you design by (suss.me)[https://suus.me].
+Thank you design by [suss.me](https://suus.me).
