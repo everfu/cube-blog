@@ -1,42 +1,54 @@
 # Cube Blog
 
-A modern, minimalist blog built with Next.js and UnoCSS, inspired by [suus.me](https://suus.me/).
+A modern, minimalist personal blog built with Next.js 16 and UnoCSS.
 
 ## Features
 
-- ✨ Modern and clean design
-- 📝 Markdown/MDX support for blog posts
-- 🎨 Styled with UnoCSS (atomic CSS)
-- 🚀 Built with Next.js 14 (App Router)
+- ✨ Clean, minimalist design
+- 📝 MDX support with syntax highlighting (Shiki)
+- 🎨 Atomic CSS with UnoCSS
+- 🚀 Next.js 16 App Router
 - 📱 Fully responsive
-- ⚡️ Fast and optimized
-- 🔍 SEO friendly
+- 💬 Real-time online presence (Liveblocks)
+- 🖼️ Photo album with lightbox
+- � RSS feed (Atom)
+- 🗺️ Auto-generated sitemap
 
 ## Tech Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/)
+- **Framework**: [Next.js 16](https://nextjs.org/)
 - **Styling**: [UnoCSS](https://unocss.dev/)
-- **Content**: Markdown with [gray-matter](https://github.com/jonschlinkert/gray-matter) and [next-mdx-remote](https://github.com/hashicorp/next-mdx-remote)
-- **Icons**: [Lucide Icons](https://lucide.dev/) via UnoCSS preset
+- **Content**: MDX with [next-mdx-remote](https://github.com/hashicorp/next-mdx-remote) + [gray-matter](https://github.com/jonschlinkert/gray-matter)
+- **Syntax Highlighting**: [Shiki](https://shiki.style/)
+- **Icons**: [Lucide](https://lucide.dev/) via @unocss/preset-icons
+- **Real-time**: [Liveblocks](https://liveblocks.io/)
 - **Language**: TypeScript
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js 18+
+- pnpm 9+
+
 ### Installation
 
 ```bash
-# Install dependencies
-npm install
-# or
 pnpm install
-# or
-yarn install
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and configure:
+
+```bash
+NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY=your_liveblocks_public_key
 ```
 
 ### Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the blog.
@@ -44,8 +56,8 @@ Open [http://localhost:3000](http://localhost:3000) to view the blog.
 ### Build
 
 ```bash
-npm run build
-npm run start
+pnpm build
+pnpm start
 ```
 
 ## Project Structure
@@ -53,87 +65,71 @@ npm run start
 ```
 cube-blog/
 ├── src/
-│   ├── app/              # Next.js app router pages
+│   ├── app/              # Next.js App Router
 │   │   ├── layout.tsx    # Root layout
 │   │   ├── page.tsx      # Home page
-│   │   ├── posts/        # Blog posts pages
-│   │   ├── about/        # About page
+│   │   ├── posts/        # Blog posts
 │   │   ├── stack/        # Tech stack page
-│   │   └── album/        # Photo album page
+│   │   ├── album/        # Photo album
+│   │   ├── atom.xml/     # RSS feed
+│   │   └── sitemap.ts    # Sitemap generator
 │   ├── components/       # React components
-│   │   ├── Header.tsx
-│   │   ├── Footer.tsx
-│   │   └── PostCard.tsx
-│   └── lib/              # Utility functions
-│       └── posts.ts      # Blog post utilities
+│   ├── data/             # Static data
+│   ├── lib/              # Utilities
+│   └── types/            # TypeScript types
 ├── content/
-│   └── posts/            # Markdown blog posts
+│   └── posts/            # Markdown/MDX posts
+├── blog.config.ts        # Site configuration
 ├── uno.config.ts         # UnoCSS configuration
-├── next.config.js        # Next.js configuration
-└── tsconfig.json         # TypeScript configuration
+└── next.config.js        # Next.js configuration
 ```
 
-## Writing Blog Posts
+## Configuration
 
-Create a new `.md` file in `content/posts/`:
+Edit `blog.config.ts` to customize site info:
+
+```typescript
+export const siteConfig = {
+  name: "Your Blog Name",
+  title: "Your Blog Title",
+  description: "Your blog description",
+  url: "https://your-domain.com",
+  author: {
+    name: "Your Name",
+    email: "you@example.com",
+  },
+  // ...
+}
+```
+
+## Writing Posts
+
+Create a new `.mdx` file in `content/posts/`:
 
 ```markdown
 ---
 title: "Your Post Title"
 date: "2024-11-30"
-excerpt: "A brief description of your post"
+excerpt: "A brief description"
 tags: ["tag1", "tag2"]
 ---
 
-# Your Post Title
-
-Your content here...
+Your content here with **MDX** support...
 ```
-
-## Customization
-
-### Colors
-
-Edit `uno.config.ts` to customize the color scheme:
-
-```typescript
-theme: {
-  colors: {
-    primary: '#000000',
-    secondary: '#666666',
-    accent: '#0066cc',
-    // ...
-  }
-}
-```
-
-### Content
-
-- Update personal information in `src/app/about/page.tsx`
-- Modify tech stack in `src/app/stack/page.tsx`
-- Customize navigation in `src/components/Header.tsx`
 
 ## Deployment
 
 ### Vercel (Recommended)
 
-1. Push your code to GitHub
-2. Import your repository on [Vercel](https://vercel.com)
-3. Deploy with one click
+1. Push to GitHub
+2. Import on [Vercel](https://vercel.com)
+3. Add environment variables
+4. Deploy
 
 ### Other Platforms
 
-The blog can be deployed to any platform that supports Next.js:
-
-- Netlify
-- Cloudflare Pages
-- AWS Amplify
-- Self-hosted
+Compatible with Netlify, Cloudflare Pages, AWS Amplify, or self-hosted.
 
 ## License
 
 [MIT](./LICENSE)
-
-## Acknowledgments
-
-Design inspired by [suus.me](https://suus.me/)
