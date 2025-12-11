@@ -1,4 +1,4 @@
-# Fuever's Blog
+# Cube Blog
 
 A modern, minimalist blog built with Next.js and UnoCSS, inspired by [suus.me](https://suus.me/).
 
@@ -51,7 +51,7 @@ npm run start
 ## Project Structure
 
 ```
-blog.efu.me/
+cube-blog/
 ├── src/
 │   ├── app/              # Next.js app router pages
 │   │   ├── layout.tsx    # Root layout

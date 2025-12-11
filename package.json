@@ -1,6 +1,6 @@
 {
-  "name": "blog.efu.me",
-  "version": "0.1.0",
+  "name": "cube-blog",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
