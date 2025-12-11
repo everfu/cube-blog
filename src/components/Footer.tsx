@@ -22,6 +22,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <p className="text-xs text-muted">
               {siteConfig.copyright.startYear} - {currentYear} {siteConfig.author.name}. All rights reserved.
+              Design by <a href="https://suus.me" target="_blank" rel="noopener noreferrer">suss.me</a>
             </p>
             <OnlineCount />
           </div>
