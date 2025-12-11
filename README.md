@@ -133,3 +133,7 @@ Compatible with Netlify, Cloudflare Pages, AWS Amplify, or self-hosted.
 ## License
 
 [MIT](./LICENSE)
+
+## Credit
+
+thank you design by (suss.me)[https://suus.me].
