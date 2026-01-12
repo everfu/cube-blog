@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { SectionDivider } from '@/components/common'
 import { siteConfig } from '@/../blog.config'
-import OnlineCount from '@/components/OnlineCount'
+import { OnlineCount } from '@/components/ui'
 
 const SOCIAL_LINKS = [
   { href: siteConfig.social.github, icon: 'i-lucide-github', label: 'GitHub', external: true },

@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import '@unocss/reset/tailwind.css'
 import './globals.css'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import { Header, Footer } from '@/components/layout'
 import { siteConfig } from '@/../blog.config'
 
 export const metadata: Metadata = {

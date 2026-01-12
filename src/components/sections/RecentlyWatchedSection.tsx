@@ -1,4 +1,4 @@
-import WatchedCard from '@/components/WatchedCard'
+import { WatchedCard } from '@/components/ui'
 import { SectionDivider } from '@/components/common'
 import { watchedItems } from '@/data/watched'
 

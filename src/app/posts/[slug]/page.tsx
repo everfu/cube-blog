@@ -8,8 +8,8 @@ import { getAllPosts, getPostBySlug } from '@/lib/posts'
 import { remarkCallout } from '@/lib/remarkCallout'
 import { formatDate, getReadingTime, getCategoryColorWithBorder } from '@/lib/utils'
 import { SectionDivider } from '@/components/common'
-import { mdxComponents } from '@/components/MDXComponents'
-import Comment from '@/components/Comment'
+import { mdxComponents } from '@/components/mdx'
+import { Comment } from '@/components/ui'
 import { siteConfig } from '@/../blog.config'
 
 interface PageProps {
