@@ -1,6 +1,11 @@
 import Link from 'next/link'
 import { SectionDivider } from '@/components/common'
 
+export const metadata = {
+  title: '404 Page not found',
+  description: 'The page you are looking for doesn’t exist or has been moved.',
+}
+
 export default function NotFound() {
   return (
     <div className="space-y-0">
