@@ -10,8 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@liveblocks/client": "^3.11.0",
-    "@liveblocks/react": "^3.11.0",
+    "@liveblocks/client": "^3.12.1",
+    "@liveblocks/react": "^3.12.1",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "16.0.6",
@@ -20,20 +20,20 @@
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
     "next": "16.0.6",
-    "next-css-obfuscator": "^3.0.0",
+    "next-css-obfuscator": "^3.0.1",
     "next-mdx-remote": "^5.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "remark-directive": "^4.0.0",
     "remark-gfm": "^4.0.1",
-    "shiki": "^3.18.0",
+    "shiki": "^3.21.0",
     "unist-util-visit": "^5.0.0",
-    "yet-another-react-lightbox": "^3.25.0"
+    "yet-another-react-lightbox": "^3.28.0"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.77",
-    "@iconify/json": "^2.2.413",
-    "@types/node": "^20.19.25",
+    "@iconify-json/lucide": "^1.2.84",
+    "@iconify/json": "^2.2.427",
+    "@types/node": "^20.19.28",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@unocss/preset-icons": "66.5.10-beta.1",
