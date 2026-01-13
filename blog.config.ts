@@ -37,6 +37,11 @@ export const siteConfig = {
     repositories: 18,
     stars: 1106,
   },
+  // 评论
+  comment: {
+    envId: 'https://api.efu.me/tk/',
+    options: {}
+  }
 } as const
 
 export type SiteConfig = typeof siteConfig
