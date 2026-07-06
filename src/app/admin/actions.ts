@@ -37,137 +37,115 @@ import {
 } from '@/server/watched/adapters/actions'
 import { saveAdminPost } from '@/server/posts/adapters/actions'
 import { deleteAdminMedia, uploadAdminMedia } from '@/server/media/adapters/actions'
+import type { CurrentAdmin } from '@/lib/auth/admin'
 
-async function requireAdmin() {
-  return requireAdminAction()
+async function runAdminAction<T>(
+  handler: (admin: CurrentAdmin) => Promise<T> | T
+) {
+  const admin = await requireAdminAction()
+  return handler(admin)
 }
 
 export async function savePost(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveAdminPost(admin, formData)
+  return runAdminAction(admin => saveAdminPost(admin, formData))
 }
 
 export async function updateCommentStatus(formData: FormData) {
-  const admin = await requireAdmin()
-  return updateAdminCommentStatus(admin, formData)
+  return runAdminAction(admin => updateAdminCommentStatus(admin, formData))
 }
 
 export async function updateCommentStatuses(formData: FormData) {
-  const admin = await requireAdmin()
-  return updateAdminCommentStatuses(admin, formData)
+  return runAdminAction(admin => updateAdminCommentStatuses(admin, formData))
 }
 
 export async function replyComment(formData: FormData) {
-  const admin = await requireAdmin()
-  return replyAdminComment(admin, formData)
+  return runAdminAction(admin => replyAdminComment(admin, formData))
 }
 
 export async function saveCommentEmojiPacks(formData: FormData) {
-  const admin = await requireAdmin()
-  return updateCommentEmojiPacks(admin, formData)
+  return runAdminAction(admin => updateCommentEmojiPacks(admin, formData))
 }
 
 export async function saveCommentAvatarSettings(formData: FormData) {
-  const admin = await requireAdmin()
-  return updateCommentAvatarSettings(admin, formData)
+  return runAdminAction(admin => updateCommentAvatarSettings(admin, formData))
 }
 
 export async function saveCommentSmtpSettings(formData: FormData) {
-  const admin = await requireAdmin()
-  return updateCommentSmtpSettings(admin, formData)
+  return runAdminAction(admin => updateCommentSmtpSettings(admin, formData))
 }
 
 export async function sendCommentSmtpTestAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return sendCommentSmtpTest(admin, formData)
+  return runAdminAction(admin => sendCommentSmtpTest(admin, formData))
 }
 
 export async function saveWatched(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveWatchedItem(admin, formData)
+  return runAdminAction(admin => saveWatchedItem(admin, formData))
 }
 
 export async function deleteWatched(formData: FormData) {
-  const admin = await requireAdmin()
-  return deleteWatchedItem(admin, formData)
+  return runAdminAction(admin => deleteWatchedItem(admin, formData))
 }
 
 export async function saveAlbumCategoryAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveAlbumCategory(admin, formData)
+  return runAdminAction(admin => saveAlbumCategory(admin, formData))
 }
 
 export async function saveAlbumPhotoAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveAlbumPhoto(admin, formData)
+  return runAdminAction(admin => saveAlbumPhoto(admin, formData))
 }
 
 export async function deleteAlbumPhotoAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return deleteAlbumPhoto(admin, formData)
+  return runAdminAction(admin => deleteAlbumPhoto(admin, formData))
 }
 
 export async function saveStackCategoryAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveStackCategory(admin, formData)
+  return runAdminAction(admin => saveStackCategory(admin, formData))
 }
 
 export async function saveStackItemAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveStackItem(admin, formData)
+  return runAdminAction(admin => saveStackItem(admin, formData))
 }
 
 export async function deleteStackItemAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return deleteStackItem(admin, formData)
+  return runAdminAction(admin => deleteStackItem(admin, formData))
 }
 
 export async function saveFriendGroupAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveFriendGroup(admin, formData)
+  return runAdminAction(admin => saveFriendGroup(admin, formData))
 }
 
 export async function saveFriendLinkAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveFriendLink(admin, formData)
+  return runAdminAction(admin => saveFriendLink(admin, formData))
 }
 
 export async function deleteFriendLinkAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return deleteFriendLink(admin, formData)
+  return runAdminAction(admin => deleteFriendLink(admin, formData))
 }
 
 export async function refreshFriendFeeds() {
-  const admin = await requireAdmin()
-  return refreshFriendFeedSnapshots(admin)
+  return runAdminAction(admin => refreshFriendFeedSnapshots(admin))
 }
 
 export async function saveFriendApplicationSettingsAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveFriendApplicationSettings(admin, formData)
+  return runAdminAction(admin => saveFriendApplicationSettings(admin, formData))
 }
 
 export async function updateFriendApplicationStatusAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return updateFriendApplicationStatus(admin, formData)
+  return runAdminAction(admin => updateFriendApplicationStatus(admin, formData))
 }
 
 export async function approveFriendApplicationAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return approveFriendApplication(admin, formData)
+  return runAdminAction(admin => approveFriendApplication(admin, formData))
 }
 
 export async function saveHomeSectionAction(formData: FormData) {
-  const admin = await requireAdmin()
-  return saveHomeSection(admin, formData)
+  return runAdminAction(admin => saveHomeSection(admin, formData))
 }
 
 export async function uploadMedia(formData: FormData) {
-  const admin = await requireAdmin()
-  return uploadAdminMedia(admin, formData)
+  return runAdminAction(admin => uploadAdminMedia(admin, formData))
 }
 
 export async function deleteMedia(formData: FormData) {
-  const admin = await requireAdmin()
-  return deleteAdminMedia(admin, formData)
+  return runAdminAction(admin => deleteAdminMedia(admin, formData))
 }

@@ -7,6 +7,7 @@ interface PostMetricsProps {
   initialViewCount: number
   initialLikeCount: number
   initialCommentCount?: number
+  commentPath?: string
   readonlyMetric?: 'like' | 'comment'
   variant?: 'compact' | 'footer'
   readonly?: boolean
@@ -17,6 +18,7 @@ type LikeState = 'idle' | 'saving' | 'liked' | 'error'
 const viewReportWindowMs = 2000
 const recentViewReports = new Map<string, number>()
 const metricsSyncEventName = 'post-metrics-sync'
+const commentCountSyncEventName = 'comment-count-sync'
 const metaItemClass = 'inline-flex items-center gap-1'
 const metaBadgeClass = 'inline-flex items-center gap-1 rounded border border-border px-2 py-0.5 text-xs'
 const metaIconClass = 'text-[10px]'
@@ -28,11 +30,17 @@ interface PostMetricsSyncDetail {
   liked?: boolean
 }
 
+interface CommentCountSyncDetail {
+  path: string
+  count: number
+}
+
 export default function PostMetrics({
   postId,
   initialViewCount,
   initialLikeCount,
   initialCommentCount = 0,
+  commentPath,
   readonlyMetric = 'like',
   variant = 'compact',
   readonly = false,
@@ -40,6 +48,7 @@ export default function PostMetrics({
   const storageKey = useMemo(() => `post-liked:${postId}`, [postId])
   const [viewCount, setViewCount] = useState(initialViewCount)
   const [likeCount, setLikeCount] = useState(initialLikeCount)
+  const [commentCount, setCommentCount] = useState(initialCommentCount)
   const [state, setState] = useState<LikeState>('idle')
 
   useEffect(() => {
@@ -65,6 +74,19 @@ export default function PostMetrics({
       window.removeEventListener(metricsSyncEventName, syncMetrics)
     }
   }, [postId])
+
+  useEffect(() => {
+    if (!commentPath) return undefined
+
+    function syncCommentCount(event: Event) {
+      const { detail } = event as CustomEvent<CommentCountSyncDetail>
+      if (!detail || detail.path !== commentPath) return
+      setCommentCount(detail.count)
+    }
+
+    window.addEventListener(commentCountSyncEventName, syncCommentCount)
+    return () => window.removeEventListener(commentCountSyncEventName, syncCommentCount)
+  }, [commentPath])
 
   const broadcastMetrics = useCallback((detail: Omit<PostMetricsSyncDetail, 'postId'>) => {
     window.dispatchEvent(new CustomEvent<PostMetricsSyncDetail>(metricsSyncEventName, {
@@ -160,7 +182,7 @@ export default function PostMetrics({
           {readonlyMetric === 'comment' ? (
             <>
               <span className={`i-lucide-message-circle ${metaIconClass}`} />
-              {initialCommentCount}
+              {commentCount}
             </>
           ) : (
             <>

@@ -3,8 +3,6 @@ import { requireAdminPage } from '@/lib/auth/require-admin'
 import { formatTimeAgo } from '@/lib/utils'
 import { AdminEmptyState, AdminPageHeader, AdminPanel, AdminPanelHeader, formatAdminAction, formatAdminEntity } from '@/components/admin/AdminPrimitives'
 
-export const dynamic = 'force-dynamic'
-
 export default async function AdminAuditPage() {
   await requireAdminPage('/admin/audit')
   const logs = await getRecentAdminAuditLogs(50)

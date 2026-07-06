@@ -13,6 +13,8 @@ import { SkeletonLine } from './SkeletonLine'
 import { normalizeWebsite } from './utils'
 import type { CommentFormState, CommentProps, EmojiPack } from './types'
 
+const commentCountSyncEventName = 'comment-count-sync'
+
 export default function Comment({ path, postId, className }: CommentProps) {
   const [comments, setComments] = useState<PublicComment[]>([])
   const [emojiPacks, setEmojiPacks] = useState<EmojiPack[]>(defaultEmojiPacks)
@@ -59,6 +61,12 @@ export default function Comment({ path, postId, className }: CommentProps) {
   useEffect(() => {
     if (viewerToken) void loadComments(viewerToken)
   }, [loadComments, viewerToken])
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(commentCountSyncEventName, {
+      detail: { path, count: comments.length },
+    }))
+  }, [comments.length, path])
 
   function patchForm(patch: Partial<CommentFormState>) {
     setForm(current => ({ ...current, ...patch }))

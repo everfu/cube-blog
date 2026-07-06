@@ -1,8 +1,6 @@
 import { NextRequest } from 'next/server'
 import { commentLikeResponse } from '@/server/comments/adapters/http'
 
-export const dynamic = 'force-dynamic'
-
 interface RouteContext {
   params: Promise<{
     id: string

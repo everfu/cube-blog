@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
-
 interface PageProps {
   searchParams: Promise<{
     keyword?: string

@@ -1,7 +1,5 @@
 import AdminCommentsStatusPage from '@/components/admin/AdminCommentsStatusPage'
 
-export const dynamic = 'force-dynamic'
-
 interface PageProps {
   searchParams: Promise<{
     status?: string

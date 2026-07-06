@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache'
+import { cacheLife, cacheTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isSupabaseAdminConfigured } from '@/lib/supabase/config'
 import { DEFAULT_FRIEND_AVATAR, getFriendFavicon } from '@/server/feeds/application/utils'
@@ -7,6 +7,12 @@ import type { AlbumCategory, FeedEntry, FeedGroup, FriendApplicationSettings, Fr
 const defaultFriendApplicationSettings: FriendApplicationSettings = {
   enabled: false,
 }
+
+const publicContentCacheLife = {
+  stale: 300,
+  revalidate: 300,
+  expire: 3600,
+} as const
 
 function ensureAdminClient() {
   if (!isSupabaseAdminConfigured) return null
@@ -286,37 +292,51 @@ async function fetchFriendApplicationSettings(): Promise<FriendApplicationSettin
   return parseFriendApplicationSettings(data.value)
 }
 
-export const getHomeSections = unstable_cache(fetchHomeSections, ['home-sections'], {
-  tags: ['home'],
-  revalidate: 300,
-})
+export async function getHomeSections() {
+  'use cache'
+  cacheTag('home')
+  cacheLife(publicContentCacheLife)
+  return fetchHomeSections()
+}
 
-export const getWatchedItems = unstable_cache(fetchWatchedItems, ['watched-items'], {
-  tags: ['watched', 'home'],
-  revalidate: 300,
-})
+export async function getWatchedItems(limit?: number) {
+  'use cache'
+  cacheTag('watched', 'home')
+  cacheLife(publicContentCacheLife)
+  return fetchWatchedItems(limit)
+}
 
-export const getAlbumCategories = unstable_cache(fetchAlbumCategories, ['album-categories'], {
-  tags: ['album'],
-  revalidate: 300,
-})
+export async function getAlbumCategories() {
+  'use cache'
+  cacheTag('album')
+  cacheLife(publicContentCacheLife)
+  return fetchAlbumCategories()
+}
 
-export const getStack = unstable_cache(fetchStack, ['stack'], {
-  tags: ['stack'],
-  revalidate: 300,
-})
+export async function getStack() {
+  'use cache'
+  cacheTag('stack')
+  cacheLife(publicContentCacheLife)
+  return fetchStack()
+}
 
-export const getFeedGroups = unstable_cache(fetchFeedGroups, ['feed-groups'], {
-  tags: ['links', 'friends'],
-  revalidate: 300,
-})
+export async function getFeedGroups() {
+  'use cache'
+  cacheTag('links', 'friends')
+  cacheLife(publicContentCacheLife)
+  return fetchFeedGroups()
+}
 
-export const getFriendsSnapshot = unstable_cache(fetchFriendsSnapshot, ['friend-feed-snapshots'], {
-  tags: ['friends'],
-  revalidate: 300,
-})
+export async function getFriendsSnapshot() {
+  'use cache'
+  cacheTag('friends')
+  cacheLife(publicContentCacheLife)
+  return fetchFriendsSnapshot()
+}
 
-export const getFriendApplicationSettings = unstable_cache(fetchFriendApplicationSettings, ['friend-application-settings'], {
-  tags: ['friend-applications', 'links'],
-  revalidate: 300,
-})
+export async function getFriendApplicationSettings() {
+  'use cache'
+  cacheTag('friend-applications', 'links')
+  cacheLife(publicContentCacheLife)
+  return fetchFriendApplicationSettings()
+}

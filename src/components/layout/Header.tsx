@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { name: 'ALBUM', href: '/album', target: '_self' },
   { name: 'FRIENDS', href: '/friends', target: '_self' },
   { name: 'LINKS', href: '/links', target: '_self' },
+  { name: 'ABOUT', href: '/about', target: '_self' },
 ]
 
 export default function Header() {

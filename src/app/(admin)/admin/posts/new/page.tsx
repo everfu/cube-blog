@@ -2,8 +2,6 @@ import PostEditor from '@/components/admin/PostEditor'
 import { requireAdminPage } from '@/lib/auth/require-admin'
 import { AdminPageHeader } from '@/components/admin/AdminPrimitives'
 
-export const dynamic = 'force-dynamic'
-
 export default async function NewPostPage() {
   await requireAdminPage('/admin/posts/new')
 

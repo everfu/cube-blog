@@ -11,8 +11,6 @@ export const metadata = {
   description: '我的朋友们和帮助过我的人',
 }
 
-export const revalidate = 300
-
 function getArchClass(arch: string) {
   const map: Record<string, string> = {
     Cloudflare: 'i-devicon-cloudflare',

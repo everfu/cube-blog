@@ -1,3 +1,4 @@
+import { cacheLife, cacheTag } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -87,6 +88,12 @@ export const defaultCommentSmtpSettings: CommentSmtpSettings = {
   ownerEmail: '',
 }
 
+const remoteEmojiPackCacheLife = {
+  stale: 300,
+  revalidate: 3600,
+  expire: 86400,
+} as const
+
 export function parseEmojiPacksInput(value: unknown): EmojiPack[] | null {
   const parsed = emojiPacksSchema.safeParse(value)
   if (parsed.success) return parsed.data
@@ -140,7 +147,6 @@ async function fetchEmojiPackSource(source: string): Promise<EmojiPack[]> {
 
   try {
     const response = await fetch(source, {
-      cache: 'no-store',
       signal: controller.signal,
     })
     if (!response.ok) return []
@@ -155,6 +161,15 @@ async function fetchEmojiPackSource(source: string): Promise<EmojiPack[]> {
   }
 }
 
+async function fetchEmojiPacksForSources(sources: string[]): Promise<EmojiPack[]> {
+  'use cache'
+  cacheTag('comment-settings')
+  cacheLife(remoteEmojiPackCacheLife)
+
+  const packs = (await Promise.all(sources.map(fetchEmojiPackSource))).flat()
+  return packs.length > 0 ? packs : defaultEmojiPacks
+}
+
 export function parseCommentAvatarSettings(value: unknown): CommentAvatarSettings {
   const parsed = commentAvatarSettingsSchema.safeParse(value)
   return parsed.success ? parsed.data : defaultCommentAvatarSettings
@@ -167,8 +182,7 @@ export function parseCommentSmtpSettings(value: unknown): CommentSmtpSettings {
 
 export async function getEmojiPacks(): Promise<EmojiPack[]> {
   const sources = await getEmojiPackSources()
-  const packs = (await Promise.all(sources.map(fetchEmojiPackSource))).flat()
-  return packs.length > 0 ? packs : defaultEmojiPacks
+  return fetchEmojiPacksForSources(sources)
 }
 
 export async function getEmojiPackSources(): Promise<string[]> {

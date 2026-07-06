@@ -1,7 +1,5 @@
 import { getFriendsSnapshot } from '@/server/friends/adapters/page'
 
-export const revalidate = 300
-
 export async function GET() {
   try {
     const response = await getFriendsSnapshot()

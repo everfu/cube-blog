@@ -18,8 +18,6 @@ import {
 } from '@/components/admin/AdminPrimitives'
 import AdminMediaHint from '@/components/admin/AdminMediaHint'
 
-export const dynamic = 'force-dynamic'
-
 function WatchedForm({ item }: { item?: Awaited<ReturnType<typeof getAdminWatchedItems>>[number] }) {
   return (
     <form action={saveWatched}>

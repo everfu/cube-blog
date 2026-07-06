@@ -3,49 +3,73 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
 
-type ThemeChoice = 'system' | 'light' | 'dark'
+export const THEME_CHOICES = ['system', 'light', 'dark'] as const
+export const RESOLVED_THEMES = ['light', 'dark'] as const
+
+export type ThemeChoice = (typeof THEME_CHOICES)[number]
+export type ResolvedTheme = (typeof RESOLVED_THEMES)[number]
+
 type Attribute = `data-${string}` | 'class'
-const DEFAULT_THEMES = ['light', 'dark']
+const DEFAULT_THEMES: ResolvedTheme[] = ['light', 'dark']
 
 export interface ThemeProviderProps {
   children: ReactNode
-  themes?: string[]
-  forcedTheme?: string
+  themes?: ResolvedTheme[]
+  forcedTheme?: ThemeChoice
   enableSystem?: boolean
   disableTransitionOnChange?: boolean
   enableColorScheme?: boolean
   storageKey?: string
-  defaultTheme?: string
+  defaultTheme?: ThemeChoice
   attribute?: Attribute | Attribute[]
-  value?: Record<string, string>
+  value?: Partial<Record<ResolvedTheme, string>>
 }
 
 interface ThemeContextValue {
-  themes: string[]
-  forcedTheme?: string
-  setTheme: Dispatch<SetStateAction<string>>
-  theme?: string
-  resolvedTheme?: string
-  systemTheme?: 'dark' | 'light'
+  themes: ThemeChoice[]
+  forcedTheme?: ThemeChoice
+  setTheme: Dispatch<SetStateAction<ThemeChoice>>
+  theme: ThemeChoice
+  resolvedTheme: ResolvedTheme
+  systemTheme?: ResolvedTheme
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   themes: [],
   setTheme: () => undefined,
+  theme: 'system',
+  resolvedTheme: 'light',
 })
 
-function getSystemTheme(): 'dark' | 'light' {
+export function isThemeChoice(value: unknown): value is ThemeChoice {
+  return THEME_CHOICES.includes(value as ThemeChoice)
+}
+
+function isResolvedTheme(value: unknown): value is ResolvedTheme {
+  return RESOLVED_THEMES.includes(value as ResolvedTheme)
+}
+
+function getSystemTheme(): ResolvedTheme {
   if (typeof window === 'undefined') return 'light'
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-function getStoredTheme(storageKey: string, fallback: string) {
+function getStoredTheme(storageKey: string, fallback: ThemeChoice): ThemeChoice {
   if (typeof window === 'undefined') return fallback
   try {
-    return localStorage.getItem(storageKey) || fallback
+    const storedTheme = localStorage.getItem(storageKey)
+    return isThemeChoice(storedTheme) ? storedTheme : fallback
   } catch {
     return fallback
   }
+}
+
+function resolveTheme(theme: ThemeChoice, systemTheme: ResolvedTheme, enableSystem: boolean): ResolvedTheme {
+  if (theme === 'system') {
+    return enableSystem ? systemTheme : 'light'
+  }
+
+  return theme
 }
 
 function disableTransitions() {
@@ -67,9 +91,9 @@ export function applyThemeAttribute({
 }: {
   attribute: Attribute | Attribute[]
   enableColorScheme: boolean
-  resolvedTheme: string
-  themes: string[]
-  value?: Record<string, string>
+  resolvedTheme: ResolvedTheme
+  themes: ResolvedTheme[]
+  value?: Partial<Record<ResolvedTheme, string>>
 }) {
   const root = document.documentElement
   const mappedTheme = value?.[resolvedTheme] || resolvedTheme
@@ -88,7 +112,7 @@ export function applyThemeAttribute({
   const attributes = Array.isArray(attribute) ? attribute : [attribute]
   attributes.forEach(applyAttribute)
 
-  if (enableColorScheme && (resolvedTheme === 'light' || resolvedTheme === 'dark')) {
+  if (enableColorScheme && isResolvedTheme(resolvedTheme)) {
     root.style.colorScheme = resolvedTheme
   }
 }
@@ -106,23 +130,23 @@ export function ThemeProvider({
   value,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState(() => getStoredTheme(storageKey, defaultTheme))
-  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(() => getSystemTheme())
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => getSystemTheme())
 
-  const resolvedTheme = (forcedTheme || theme) === 'system' && enableSystem
-    ? systemTheme
-    : forcedTheme || theme
+  const resolvedTheme = resolveTheme(forcedTheme || theme, systemTheme, enableSystem)
 
-  const setTheme = useCallback<Dispatch<SetStateAction<string>>>((nextTheme) => {
+  const setTheme = useCallback<Dispatch<SetStateAction<ThemeChoice>>>((nextTheme) => {
     setThemeState((currentTheme) => {
       const value = typeof nextTheme === 'function' ? nextTheme(currentTheme) : nextTheme
+      const validTheme = isThemeChoice(value) ? value : defaultTheme
+
       try {
-        localStorage.setItem(storageKey, value)
+        localStorage.setItem(storageKey, validTheme)
       } catch {
         // Ignore storage failures; the in-memory state still updates.
       }
-      return value
+      return validTheme
     })
-  }, [storageKey])
+  }, [defaultTheme, storageKey])
 
   useEffect(() => {
     if (!enableSystem) return undefined

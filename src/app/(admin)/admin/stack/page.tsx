@@ -20,8 +20,6 @@ import {
 import AdminMediaHint from '@/components/admin/AdminMediaHint'
 import type { StackKind } from '@/types/supabase'
 
-export const dynamic = 'force-dynamic'
-
 function KindSelect({ defaultValue }: { defaultValue?: StackKind }) {
   return (
     <AdminSelect name="kind" defaultValue={defaultValue || 'software'}>

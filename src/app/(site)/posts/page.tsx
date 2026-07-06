@@ -2,8 +2,6 @@ import { getAllPosts, getMorePosts, getRecentPosts } from '@/server/posts/adapte
 import { PostCardLarge, PostsClient } from '@/components/posts'
 import { SectionDivider } from '@/components/common'
 
-export const revalidate = 300
-
 export default async function PostsPage() {
   const [allPosts, recentPosts, allMorePosts] = await Promise.all([
     getAllPosts(),

@@ -3,8 +3,6 @@ import { siteConfig } from '@/config/site'
 import { absoluteUrl } from '@/config/site-utils'
 import { getAllPosts, getPostHref } from '@/server/posts/adapters/page'
 
-export const revalidate = 300
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPosts()
 

@@ -99,9 +99,10 @@ export function getImagePreviewUrl(src: string) {
   })
 }
 
-export function getBackgroundImageUrl(src: string, width: number) {
+export function getBackgroundImageUrl(src: string, width: number, height?: number) {
   return getQiniuImageVariant(src, {
     width,
+    height,
     quality: 76,
     format: 'webp',
     mode: 'cover',

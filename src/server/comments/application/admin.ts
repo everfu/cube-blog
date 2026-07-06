@@ -21,23 +21,10 @@ function sanitizeDateValue(value?: string) {
   return Number.isNaN(parsed.valueOf()) ? null : parsed.toISOString()
 }
 
-function applyCommentOrdering(
+function applyCommentFilters(
   query: ReturnType<Awaited<ReturnType<typeof createClient>>['from']>,
-  sort: AdminCommentFilters['sort']
+  filters: AdminCommentFilters
 ) {
-  if (sort === 'oldest') return query.order('created_at', { ascending: true })
-  if (sort === 'likes') return query.order('like_count', { ascending: false }).order('created_at', { ascending: false })
-  return query.order('created_at', { ascending: false })
-}
-
-export async function getAdminComments(filters: AdminCommentFilters = {}): Promise<AdminComment[]> {
-  if (!isSupabaseConfigured) return []
-
-  const supabase = await createClient()
-  let query = supabase
-    .from('comments')
-    .select('id,page_path,post_id,parent_id,author_name,author_email,email_hash,website,body,status,auth_mode,location_label,ua_browser,ua_browser_version,ua_os,ua_device,ua_request_id,like_count,viewer_token_hash,user_agent,ip_hash,notified_owner_at,notified_reply_at,created_at')
-
   if (filters.status && filters.status !== 'all') {
     query = query.eq('status', filters.status)
   }
@@ -70,7 +57,27 @@ export async function getAdminComments(filters: AdminCommentFilters = {}): Promi
   if (createdFrom) query = query.gte('created_at', createdFrom)
   if (createdTo) query = query.lte('created_at', createdTo)
 
-  query = applyCommentOrdering(query, filters.sort)
+  return query
+}
+
+function applyCommentOrdering(
+  query: ReturnType<Awaited<ReturnType<typeof createClient>>['from']>,
+  sort: AdminCommentFilters['sort']
+) {
+  if (sort === 'oldest') return query.order('created_at', { ascending: true })
+  if (sort === 'likes') return query.order('like_count', { ascending: false }).order('created_at', { ascending: false })
+  return query.order('created_at', { ascending: false })
+}
+
+export async function getAdminComments(filters: AdminCommentFilters = {}): Promise<AdminComment[]> {
+  if (!isSupabaseConfigured) return []
+
+  const supabase = await createClient()
+  let query = supabase
+    .from('comments')
+    .select('id,page_path,post_id,parent_id,author_name,author_email,email_hash,website,body,status,auth_mode,location_label,ua_browser,ua_browser_version,ua_os,ua_device,ua_request_id,like_count,viewer_token_hash,user_agent,ip_hash,notified_owner_at,notified_reply_at,created_at')
+
+  query = applyCommentOrdering(applyCommentFilters(query, filters), filters.sort)
 
   const { data, error } = await query
   if (error || !data) return []
@@ -84,13 +91,23 @@ export async function getAdminComments(filters: AdminCommentFilters = {}): Promi
 }
 
 export async function getCommentCountByStatus() {
-  const comments = await getAdminComments()
+  if (!isSupabaseConfigured) {
+    return { pending: 0, approved: 0, spam: 0, deleted: 0 }
+  }
 
-  return comments.reduce<Record<CommentStatus, number>>(
-    (counts, comment) => {
-      counts[comment.status] += 1
-      return counts
-    },
+  const supabase = await createClient()
+  const statuses: CommentStatus[] = ['pending', 'approved', 'spam', 'deleted']
+  const counts = await Promise.all(statuses.map(async status => {
+    const { count } = await supabase
+      .from('comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', status)
+
+    return [status, count || 0] as const
+  }))
+
+  return counts.reduce<Record<CommentStatus, number>>(
+    (result, [status, count]) => ({ ...result, [status]: count }),
     { pending: 0, approved: 0, spam: 0, deleted: 0 }
   )
 }
@@ -108,21 +125,21 @@ export async function getAdminCommentSummary(filters: AdminCommentFilters = {}):
   }
 
   const supabase = await createClient()
-  const [{ data }, filteredComments] = await Promise.all([
-    supabase.from('comments').select('status'),
-    getAdminComments(filters),
+  const [statusCounts, filteredResult, totalResult] = await Promise.all([
+    getCommentCountByStatus(),
+    applyCommentFilters(
+      supabase.from('comments').select('id', { count: 'exact', head: true }),
+      filters
+    ),
+    supabase.from('comments').select('id', { count: 'exact', head: true }),
   ])
 
-  const rows = data || []
-  const summary = rows.reduce<AdminCommentSummary>(
-    (counts, comment) => {
-      counts.total += 1
-      counts[comment.status as CommentStatus] += 1
-      return counts
-    },
-    { total: 0, pending: 0, approved: 0, spam: 0, deleted: 0, filtered: filteredComments.length }
-  )
-
-  summary.filtered = filteredComments.length
-  return summary
+  return {
+    total: totalResult.count || 0,
+    pending: statusCounts.pending,
+    approved: statusCounts.approved,
+    spam: statusCounts.spam,
+    deleted: statusCounts.deleted,
+    filtered: filteredResult.count || 0,
+  }
 }

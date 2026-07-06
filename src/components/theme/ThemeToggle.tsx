@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { useTheme } from './ThemeProvider'
-
-type ThemeChoice = 'system' | 'light' | 'dark'
+import type { ThemeChoice } from './ThemeProvider'
 
 const THEME_SEQUENCE: ThemeChoice[] = ['system', 'light', 'dark']
 
@@ -19,12 +18,8 @@ function getNextTheme(theme: ThemeChoice) {
   return THEME_SEQUENCE[(currentIndex + 1) % THEME_SEQUENCE.length]
 }
 
-function getSystemTheme() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
 export function ThemeToggle({ className = '' }: { className?: string }) {
-  const { theme, resolvedTheme, setTheme } = useTheme()
+  const { theme, resolvedTheme, systemTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
@@ -33,9 +28,9 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
     return <div className="h-8 w-8" aria-hidden="true" />
   }
 
-  const selectedTheme = (theme ?? 'system') as ThemeChoice
+  const selectedTheme = theme
   const nextTheme = getNextTheme(selectedTheme)
-  const resolvedNextTheme = nextTheme === 'system' ? getSystemTheme() : nextTheme
+  const resolvedNextTheme = nextTheme === 'system' ? systemTheme ?? resolvedTheme : nextTheme
   const isDark = resolvedTheme === 'dark'
   const iconClass = selectedTheme === 'system'
     ? 'i-lucide-monitor-cog text-base'

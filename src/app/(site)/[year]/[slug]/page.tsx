@@ -5,7 +5,6 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import remarkDirective from 'remark-directive'
 import { getAllPosts, getPostBySlug, getPostHref } from '@/server/posts/adapters/page'
-import { getApprovedCommentCountByPath } from '@/server/comments/adapters/page'
 import { remarkCallout } from '@/lib/remarkCallout'
 import { extractHeadings } from '@/lib/extractHeadings'
 import { formatDate, getReadingTime, getCategoryColorWithBorder } from '@/lib/utils'
@@ -22,8 +21,6 @@ interface PageProps {
     slug: string
   }>
 }
-
-export const revalidate = 300
 
 export async function generateStaticParams() {
   const posts = await getAllPosts()
@@ -97,7 +94,6 @@ export default async function PostPage({ params }: PageProps) {
   const readingTime = getReadingTime(post.content)
   const headings = extractHeadings(post.content)
   const postHref = getPostHref(post)
-  const commentCount = await getApprovedCommentCountByPath(postHref)
 
   return (
     <div className="space-y-0 site-shell--article">
@@ -136,7 +132,7 @@ export default async function PostPage({ params }: PageProps) {
               postId={post.id}
               initialViewCount={post.viewCount}
               initialLikeCount={post.likeCount}
-              initialCommentCount={commentCount}
+              commentPath={postHref}
               readonlyMetric="comment"
               readonly
             />

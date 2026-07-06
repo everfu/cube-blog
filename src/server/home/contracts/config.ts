@@ -2,7 +2,7 @@ import { siteConfig } from '@/config/site'
 import type { Json } from '@/types/supabase'
 import type { HomeSection } from '@/server/content/contracts/types'
 
-export const HOME_SECTION_KEYS = ['hero', 'recent_posts', 'recently_watched'] as const
+export const HOME_SECTION_KEYS = ['hero', 'recent_posts', 'recently_watched', 'about'] as const
 
 export type HomeSectionKey = typeof HOME_SECTION_KEYS[number]
 
@@ -17,7 +17,12 @@ export interface ListSectionMetadata {
   limit: number
 }
 
-export type HomeSectionMetadata = HeroSectionMetadata | ListSectionMetadata
+export interface AboutSectionMetadata {
+  imageUrl: string
+  imageCaption: string
+}
+
+export type HomeSectionMetadata = HeroSectionMetadata | ListSectionMetadata | AboutSectionMetadata
 
 export type ConfiguredHomeSection = HomeSection & {
   key: HomeSectionKey
@@ -29,7 +34,12 @@ export const DEFAULT_HERO_METADATA: HeroSectionMetadata = {
   headline: 'A nook where `thoughts`\n& `ideas` sometimes\necho',
   intro: `Self-taught developer passionate about open source. Creator of \`${siteConfig.stats.repositories} repositories\` with \`${siteConfig.stats.stars.toLocaleString()} stars\` on GitHub.\n\nMinimalist obsessed with speed and lightweight solutions. Photography enthusiast, traveler, and documentary lover.`,
   buttonLabel: 'ABOUT ME',
-  buttonHref: siteConfig.author.url,
+  buttonHref: '/about',
+}
+
+export const DEFAULT_ABOUT_METADATA: AboutSectionMetadata = {
+  imageUrl: '/og-image.png',
+  imageCaption: siteConfig.name,
 }
 
 export const DEFAULT_HOME_SECTIONS: DefaultHomeSection[] = [
@@ -56,6 +66,14 @@ export const DEFAULT_HOME_SECTIONS: DefaultHomeSection[] = [
     enabled: true,
     sortOrder: 30,
     metadata: { limit: 4 },
+  },
+  {
+    key: 'about',
+    title: 'About',
+    subtitle: '关于页主视觉',
+    enabled: true,
+    sortOrder: 40,
+    metadata: DEFAULT_ABOUT_METADATA as unknown as Json,
   },
 ]
 
@@ -94,6 +112,14 @@ export function parseHeroMetadata(metadata: Json): HeroSectionMetadata {
 export function parseListMetadata(metadata: Json): ListSectionMetadata {
   return {
     limit: getLimit(getObject(metadata).limit),
+  }
+}
+
+export function parseAboutMetadata(metadata: Json): AboutSectionMetadata {
+  const object = getObject(metadata)
+  return {
+    imageUrl: getString(object.imageUrl, DEFAULT_ABOUT_METADATA.imageUrl),
+    imageCaption: getString(object.imageCaption, DEFAULT_ABOUT_METADATA.imageCaption),
   }
 }
 

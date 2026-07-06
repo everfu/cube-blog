@@ -3,8 +3,6 @@ import { formatEmojiPackSources, getCommentAvatarSettings, getCommentSmtpSetting
 import { saveCommentAvatarSettings, saveCommentEmojiPacks, saveCommentSmtpSettings, sendCommentSmtpTestAction } from '@/app/admin/actions'
 import { AdminPageHeader, AdminPanel, AdminPanelHeader } from '@/components/admin/AdminPrimitives'
 
-export const dynamic = 'force-dynamic'
-
 interface PageProps {
   searchParams: Promise<{
     saved?: string

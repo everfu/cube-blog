@@ -23,8 +23,6 @@ import {
 } from '@/components/admin/AdminPrimitives'
 import AdminMediaHint from '@/components/admin/AdminMediaHint'
 
-export const dynamic = 'force-dynamic'
-
 function GroupForm({ group }: { group?: Awaited<ReturnType<typeof getAdminFriends>>['groups'][number] }) {
   return (
     <form action={saveFriendGroupAction}>

@@ -906,6 +906,10 @@ export interface Database {
           passkey_count: number
         }>
       }
+      get_admin_dashboard_overview: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       increment_post_view: {
         Args: {
           p_post_id: string

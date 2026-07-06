@@ -1,3 +1,16 @@
-export { getAdminDashboardSummary, getRecentAdminAuditLogs } from '../application/dashboard'
-export type { AdminAuditLog, AdminDashboardSummary } from '../contracts/types'
-
+export {
+  getAdminDashboardOverview,
+  getAdminDashboardSummary,
+  getAdminModuleSummaries,
+  getAdminRecentActivity,
+  getRecentAdminAuditLogs,
+} from '../application/dashboard'
+export type {
+  AdminActivityItem,
+  AdminAuditLog,
+  AdminDashboardOverview,
+  AdminDashboardSummary,
+  AdminListResult,
+  AdminModuleSummary,
+  AdminTaskItem,
+} from '../contracts/types'

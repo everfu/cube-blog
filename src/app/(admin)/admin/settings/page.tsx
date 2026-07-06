@@ -2,8 +2,6 @@ import { requireAdminPage } from '@/lib/auth/require-admin'
 import { AdminPageHeader, AdminPanel, AdminPanelHeader } from '@/components/admin/AdminPrimitives'
 import AdminPasskeyManager from '@/components/admin/AdminPasskeyManager'
 
-export const dynamic = 'force-dynamic'
-
 export default async function AdminSettingsPage() {
   await requireAdminPage('/admin/settings')
 

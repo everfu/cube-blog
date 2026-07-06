@@ -19,6 +19,26 @@ export const postSelect = `
   updated_at
 `
 
+export const postMetadataSelect = `
+  id,
+  slug,
+  year,
+  title,
+  excerpt,
+  tags,
+  cover,
+  category,
+  status,
+  recent,
+  view_count,
+  like_count,
+  published_at,
+  created_at,
+  updated_at
+`
+
+type PostMetadataRow = Omit<PostRow, 'content'>
+
 export function mapPost(row: PostRow): Post {
   return {
     id: row.id,
@@ -35,6 +55,26 @@ export function mapPost(row: PostRow): Post {
     likeCount: row.like_count,
     reactions: {},
     content: row.content,
+    status: row.status,
+    updatedAt: row.updated_at,
+  }
+}
+
+export function mapPostMetadata(row: PostMetadataRow | PostRow): PostMetadata {
+  return {
+    id: row.id,
+    year: String(row.year),
+    slug: row.slug,
+    title: row.title,
+    date: row.published_at || row.created_at,
+    excerpt: row.excerpt,
+    tags: row.tags || [],
+    cover: row.cover || undefined,
+    category: row.category,
+    recent: row.recent,
+    viewCount: row.view_count,
+    likeCount: row.like_count,
+    reactions: {},
     status: row.status,
     updatedAt: row.updated_at,
   }

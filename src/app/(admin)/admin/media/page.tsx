@@ -19,8 +19,6 @@ import {
 } from '@/components/admin/AdminPrimitives'
 import { AdminCopyMediaButton, AdminDeleteMediaForm } from '@/components/admin/AdminMediaActions'
 
-export const dynamic = 'force-dynamic'
-
 interface AdminMediaPageProps {
   searchParams?: Promise<{
     folder?: string

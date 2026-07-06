@@ -1,7 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import crypto from 'node:crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { CurrentAdmin } from '@/lib/auth/admin'
@@ -273,6 +273,7 @@ export async function updateCommentEmojiPacks(admin: CurrentAdmin, formData: For
   }
 
   revalidatePath(commentSettingsPath)
+  revalidateTag('comment-settings', 'max')
   revalidatePath('/', 'layout')
   redirect(`${commentSettingsPath}?saved=emoji-packs`)
 }
@@ -294,6 +295,7 @@ export async function updateCommentAvatarSettings(admin: CurrentAdmin, formData:
   }
 
   revalidatePath(commentSettingsPath)
+  revalidateTag('comment-settings', 'max')
   revalidatePath('/', 'layout')
   redirect(`${commentSettingsPath}?saved=avatar-provider`)
 }

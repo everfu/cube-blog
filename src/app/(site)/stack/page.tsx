@@ -2,8 +2,6 @@ import { SectionDivider } from '@/components/common'
 import { HardwareCard, SoftwareCatalog } from '@/components/stack'
 import { getStack } from '@/server/stack/adapters/page'
 
-export const revalidate = 300
-
 export const metadata = {
   title: 'Stack',
   description: '我在工作与生活中长期使用、愿意推荐，或正在关注的设备与软件。',

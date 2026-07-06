@@ -1,8 +1,14 @@
-import { unstable_cache } from 'next/cache'
+import { cacheLife, cacheTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isSupabaseAdminConfigured } from '@/lib/supabase/config'
-import { mapPost, postSelect, sortByDateDesc, toMetadata } from '../data/mapper'
+import { mapPost, mapPostMetadata, postMetadataSelect, postSelect, sortByDateDesc } from '../data/mapper'
 import type { Post, PostMetadata } from '../contracts/types'
+
+const publicPostsCacheLife = {
+  stale: 300,
+  revalidate: 300,
+  expire: 3600,
+} as const
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '👏', '🤔'] as const
 
@@ -40,32 +46,35 @@ async function fetchAllPosts(): Promise<PostMetadata[]> {
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('posts')
-    .select(postSelect)
+    .select(postMetadataSelect)
     .eq('status', 'published')
     .order('published_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
 
-  const posts = data.map(mapPost)
-  const reactionsMap = await fetchReactionsByPostIds(posts.map(p => p.id))
-  for (const post of posts) {
-    post.reactions = ensureAllEmojis(reactionsMap.get(post.id) ?? {})
-  }
-  return sortByDateDesc(posts.map(toMetadata))
+  return sortByDateDesc(data.map(mapPostMetadata))
 }
 
-export const getAllPosts = unstable_cache(fetchAllPosts, ['published-posts'], {
-  tags: ['posts', 'home'],
-  revalidate: 300,
-})
+export async function getAllPosts(): Promise<PostMetadata[]> {
+  'use cache'
+  cacheTag('posts', 'home')
+  cacheLife(publicPostsCacheLife)
+  return fetchAllPosts()
+}
 
 export async function getRecentPosts(limit?: number): Promise<PostMetadata[]> {
+  'use cache'
+  cacheTag('posts', 'home')
+  cacheLife(publicPostsCacheLife)
   const posts = (await getAllPosts()).filter(post => post.recent)
   return typeof limit === 'number' ? posts.slice(0, limit) : posts
 }
 
 export async function getMorePosts(): Promise<PostMetadata[]> {
+  'use cache'
+  cacheTag('posts')
+  cacheLife(publicPostsCacheLife)
   return (await getAllPosts()).filter(post => !post.recent)
 }
 
@@ -92,7 +101,9 @@ async function fetchPostBySlug(
   return post
 }
 
-export const getPostBySlug = unstable_cache(fetchPostBySlug, ['post-by-slug'], {
-  tags: ['posts'],
-  revalidate: 300,
-})
+export async function getPostBySlug(year: string, slug: string): Promise<Post | null> {
+  'use cache'
+  cacheTag('posts')
+  cacheLife(publicPostsCacheLife)
+  return fetchPostBySlug(year, slug)
+}

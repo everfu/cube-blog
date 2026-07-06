@@ -19,8 +19,6 @@ import {
 } from '@/components/admin/AdminPrimitives'
 import AdminMediaHint from '@/components/admin/AdminMediaHint'
 
-export const dynamic = 'force-dynamic'
-
 function CategoryForm({ category }: { category?: Awaited<ReturnType<typeof getAdminAlbum>>['categories'][number] }) {
   return (
     <form action={saveAlbumCategoryAction}>

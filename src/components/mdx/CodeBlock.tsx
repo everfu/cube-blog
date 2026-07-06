@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache'
 import { codeToHtml } from 'shiki'
 import { CodeBlockClient } from './CodeBlockClient'
 
@@ -29,17 +30,22 @@ function extractLanguage(className?: string): string {
   return langMap[lang] || lang
 }
 
-export async function CodeBlock({ children, className }: CodeBlockProps) {
-  const lang = extractLanguage(className)
-  const code = children.replace(/\n$/, '')
-  
-  const html = await codeToHtml(code, {
+async function getHighlightedCode(code: string, lang: string) {
+  'use cache'
+  cacheLife('weeks')
+  return codeToHtml(code, {
     lang,
     themes: {
       light: 'github-light',
       dark: 'github-dark',
     },
   })
+}
+
+export async function CodeBlock({ children, className }: CodeBlockProps) {
+  const lang = extractLanguage(className)
+  const code = children.replace(/\n$/, '')
+  const html = await getHighlightedCode(code, lang)
 
   return <CodeBlockClient html={html} code={code} lang={lang} />
 }

@@ -4,8 +4,8 @@ export {
   DEFAULT_HERO_METADATA,
   DEFAULT_HOME_SECTIONS,
   mergeDefaultHomeSections,
+  parseAboutMetadata,
   parseHeroMetadata,
   parseListMetadata,
 } from '../contracts/config'
 export type { AdminHomeSection, HomeSection } from '@/server/content/contracts/types'
-

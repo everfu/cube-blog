@@ -4,44 +4,51 @@ import type { PostStatus } from '@/types/supabase'
 import { mapPost, postSelect } from '../data/mapper'
 import type { AdminPost, AdminPostFilters, PostRevisionSummary } from '../contracts/types'
 
-function applyPostFilters(posts: AdminPost[], filters: AdminPostFilters = {}) {
-  const keyword = filters.keyword?.trim().toLowerCase()
-  const year = filters.year?.trim()
-  const category = filters.category?.trim().toLowerCase()
-
-  return posts.filter(post => {
-    if (filters.status && filters.status !== 'all' && post.status !== filters.status) return false
-    if (filters.recent && !post.recent) return false
-    if (year && post.year !== year) return false
-    if (category && post.category.toLowerCase() !== category) return false
-    if (keyword) {
-      const haystack = [
-        post.title,
-        post.slug,
-        post.excerpt,
-        post.category,
-        post.tags.join(' '),
-      ].join(' ').toLowerCase()
-
-      if (!haystack.includes(keyword)) return false
-    }
-
-    return true
-  })
+function sanitizeSearchValue(value: string) {
+  return value.replace(/[%_,]/g, ' ').trim()
 }
 
 export async function getAdminPosts(filters: AdminPostFilters = {}): Promise<AdminPost[]> {
   if (!isSupabaseConfigured) return []
 
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('posts')
     .select(postSelect)
     .order('updated_at', { ascending: false })
 
+  if (filters.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status)
+  }
+
+  if (filters.recent) {
+    query = query.eq('recent', true)
+  }
+
+  if (filters.year?.trim()) {
+    const year = Number(filters.year.trim())
+    if (Number.isInteger(year)) query = query.eq('year', year)
+  }
+
+  if (filters.category?.trim()) {
+    query = query.ilike('category', sanitizeSearchValue(filters.category))
+  }
+
+  if (filters.keyword?.trim()) {
+    const keyword = sanitizeSearchValue(filters.keyword)
+    query = query.or([
+      `title.ilike.%${keyword}%`,
+      `slug.ilike.%${keyword}%`,
+      `excerpt.ilike.%${keyword}%`,
+      `category.ilike.%${keyword}%`,
+    ].join(','))
+  }
+
+  const { data, error } = await query
+
   if (error || !data) return []
 
-  return applyPostFilters(data.map(mapPost), filters)
+  return data.map(mapPost)
 }
 
 export async function getAdminPostById(id: string): Promise<AdminPost | null> {
@@ -60,13 +67,23 @@ export async function getAdminPostById(id: string): Promise<AdminPost | null> {
 }
 
 export async function getPostCountByStatus() {
-  const posts = await getAdminPosts()
+  if (!isSupabaseConfigured) {
+    return { draft: 0, published: 0, archived: 0 }
+  }
 
-  return posts.reduce<Record<PostStatus, number>>(
-    (counts, post) => {
-      counts[post.status] += 1
-      return counts
-    },
+  const supabase = await createClient()
+  const statuses: PostStatus[] = ['draft', 'published', 'archived']
+  const counts = await Promise.all(statuses.map(async status => {
+    const { count } = await supabase
+      .from('posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', status)
+
+    return [status, count || 0] as const
+  }))
+
+  return counts.reduce<Record<PostStatus, number>>(
+    (result, [status, count]) => ({ ...result, [status]: count }),
     { draft: 0, published: 0, archived: 0 }
   )
 }

@@ -73,10 +73,12 @@ const groups = [
 function NavItem({
   item,
   isActive,
+  badge,
   mobile,
 }: {
   item: { href: string, label: string, icon: typeof LayoutDashboardIcon }
   isActive: boolean
+  badge?: number
   mobile?: boolean
 }) {
   const Icon = item.icon
@@ -96,6 +98,11 @@ function NavItem({
       <Link href={item.href}>
         <Icon className="h-4 w-4 shrink-0" />
         <span className="truncate">{item.label}</span>
+        {badge ? (
+          <span className="ml-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full border border-[var(--admin-border)] bg-[var(--admin-surface-muted)] px-1.5 text-[10px] font-semibold tabular-nums text-foreground">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        ) : null}
       </Link>
     </Button>
   )
@@ -107,7 +114,15 @@ function NavItem({
   ) : link
 }
 
-function NavGroups({ pathname, mobile = false }: { pathname: string, mobile?: boolean }) {
+function NavGroups({
+  pathname,
+  badges = {},
+  mobile = false,
+}: {
+  pathname: string
+  badges?: Record<string, number>
+  mobile?: boolean
+}) {
   return (
     <nav className={cn('flex flex-col', mobile ? 'gap-4 px-4 py-3' : 'gap-3 px-4 py-3')}>
       {groups.map(group => (
@@ -118,7 +133,7 @@ function NavGroups({ pathname, mobile = false }: { pathname: string, mobile?: bo
               ? pathname === item.href
               : pathname.startsWith(item.href)
 
-            return <NavItem key={item.href} item={item} isActive={isActive} mobile={mobile} />
+            return <NavItem key={item.href} item={item} isActive={isActive} badge={badges[item.href]} mobile={mobile} />
           })}
         </div>
       ))}
@@ -150,7 +165,7 @@ function AdminUtilities() {
   )
 }
 
-export default function AdminNav() {
+export default function AdminNav({ badges = {} }: { badges?: Record<string, number> }) {
   const pathname = usePathname()
 
   return (
@@ -165,7 +180,7 @@ export default function AdminNav() {
           </SheetTrigger>
           <SheetContent side="left" className="w-[288px] gap-0 p-0" showCloseButton>
             <div className="min-h-0 flex-1 overflow-y-auto">
-              <NavGroups pathname={pathname} mobile />
+              <NavGroups pathname={pathname} badges={badges} mobile />
             </div>
             <Separator />
             <div className="px-4 pb-4 pt-3">
@@ -177,7 +192,7 @@ export default function AdminNav() {
 
       <aside className="hidden border-r border-[var(--admin-border)] bg-[var(--admin-surface)]/95 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[256px] lg:flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <NavGroups pathname={pathname} />
+          <NavGroups pathname={pathname} badges={badges} />
         </div>
         <Separator />
         <div className="px-4 pb-4 pt-3">

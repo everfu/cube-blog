@@ -1,7 +1,5 @@
 import { atomXsl } from '@/server/feeds/contracts/atom-xsl'
 
-export const revalidate = 3600
-
 export async function GET() {
   return new Response(atomXsl, {
     headers: {

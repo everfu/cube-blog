@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import '@unocss/reset/tailwind.css'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
@@ -60,7 +61,10 @@ export default function RootLayout({
   const themeScript = `
     (function() {
       try {
-        var theme = localStorage.getItem('theme') || 'system';
+        var storedTheme = localStorage.getItem('theme');
+        var theme = storedTheme === 'system' || storedTheme === 'light' || storedTheme === 'dark'
+          ? storedTheme
+          : 'system';
         var resolved = theme === 'system'
           ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
           : theme;
@@ -76,9 +80,11 @@ export default function RootLayout({
         <script id="theme-init" dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen bg-background text-foreground" suppressHydrationWarning>
-        <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
+        <Suspense fallback={null}>
+          <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem disableTransitionOnChange>
+            {children}
+          </ThemeProvider>
+        </Suspense>
       </body>
     </html>
   )

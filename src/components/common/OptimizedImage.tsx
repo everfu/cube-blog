@@ -1,5 +1,3 @@
-'use client'
-
 import Image, { type ImageProps } from 'next/image'
 import { getImagePreviewUrl, isQiniuImageUrl, qiniuImageLoader } from '@/lib/images/qiniu'
 

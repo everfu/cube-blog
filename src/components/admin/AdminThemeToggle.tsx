@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useTheme } from '@/components/theme/ThemeProvider'
+import { THEME_CHOICES, useTheme } from '@/components/theme/ThemeProvider'
+import type { ThemeChoice } from '@/components/theme/ThemeProvider'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,8 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-type ThemeChoice = 'system' | 'light' | 'dark'
 
 const themeLabels: Record<ThemeChoice, string> = {
   system: '跟随系统',
@@ -31,7 +30,7 @@ export default function AdminThemeToggle({ className = '' }: { className?: strin
 
   useEffect(() => setMounted(true), [])
 
-  const selectedTheme = (theme || 'system') as ThemeChoice
+  const selectedTheme = theme
   const label = `当前为${themeLabels[selectedTheme]}`
 
   if (!mounted) {
@@ -57,7 +56,7 @@ export default function AdminThemeToggle({ className = '' }: { className?: strin
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-36">
-        {(['system', 'light', 'dark'] as ThemeChoice[]).map(choice => (
+        {THEME_CHOICES.map(choice => (
           <DropdownMenuItem key={choice} onClick={() => setTheme(choice)} className="gap-2">
             <span className={`${getIcon(choice)} text-sm`} />
             <span>{themeLabels[choice]}</span>

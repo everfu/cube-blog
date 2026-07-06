@@ -5,10 +5,9 @@ import RecentlyWatchedSection from '@/components/sections/RecentlyWatchedSection
 import { getHomeSections } from '@/server/home/adapters/page'
 import { mergeDefaultHomeSections, parseListMetadata } from '@/server/home/adapters/page'
 
-export const revalidate = 300
-
 export default async function Home() {
   const configuredSections = mergeDefaultHomeSections(await getHomeSections(), false)
+    .filter(section => section.key !== 'about')
 
   return (
     <div className="space-y-0">

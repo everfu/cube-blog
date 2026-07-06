@@ -10,8 +10,6 @@ interface EditPostPageProps {
   }>
 }
 
-export const dynamic = 'force-dynamic'
-
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params
   await requireAdminPage(`/admin/posts/${id}`)

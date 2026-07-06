@@ -7,8 +7,20 @@ import type { CurrentAdmin } from '@/lib/auth/admin'
 import type { Json } from '@/types/supabase'
 import { logAdminEventWithClient } from '@/server/_shared/audit/log-admin-event-with-client'
 import { revalidateContent } from '@/server/_shared/cache/revalidate'
-import { optionalTextSchema, parseJsonObject, textOrNull } from '@/server/_shared/actions/form'
-import { isHomeSectionKey } from '@/server/home/contracts/config'
+import { optionalTextSchema, parseJsonObject, resolveImageUrl, textOrNull } from '@/server/_shared/actions/form'
+import { DEFAULT_ABOUT_METADATA, isHomeSectionKey } from '@/server/home/contracts/config'
+
+const optionalImageSrcSchema = z.string().trim().max(2000).refine((value) => {
+  if (!value) return true
+  if (value.startsWith('/')) return true
+
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}).optional().or(z.literal(''))
 
 const homeSectionSchema = z.object({
   id: optionalTextSchema,
@@ -23,9 +35,11 @@ const homeSectionSchema = z.object({
   buttonLabel: optionalTextSchema,
   buttonHref: optionalTextSchema,
   limit: z.coerce.number().int().min(1).max(12).optional(),
+  imageUrl: optionalImageSrcSchema,
+  imageCaption: optionalTextSchema,
 })
 
-function buildHomeSectionMetadata(data: z.infer<typeof homeSectionSchema>): Json {
+async function buildHomeSectionMetadata(data: z.infer<typeof homeSectionSchema>, formData: FormData): Promise<Json> {
   if (data.key === 'hero') {
     return {
       headline: data.headline || '',
@@ -38,6 +52,13 @@ function buildHomeSectionMetadata(data: z.infer<typeof homeSectionSchema>): Json
   if (data.key === 'recent_posts' || data.key === 'recently_watched') {
     return {
       limit: data.limit || 4,
+    }
+  }
+
+  if (data.key === 'about') {
+    return {
+      imageUrl: await resolveImageUrl(formData, 'imageUrl', 'imageFile', 'about') || DEFAULT_ABOUT_METADATA.imageUrl,
+      imageCaption: data.imageCaption || DEFAULT_ABOUT_METADATA.imageCaption,
     }
   }
 
@@ -56,7 +77,7 @@ export async function saveHomeSection(admin: CurrentAdmin, formData: FormData) {
     subtitle: parsed.data.subtitle || '',
     enabled: parsed.data.enabled === 'on',
     sort_order: parsed.data.sortOrder,
-    metadata: buildHomeSectionMetadata(parsed.data),
+    metadata: await buildHomeSectionMetadata(parsed.data, formData),
   }
   const id = textOrNull(parsed.data.id)
   const result = id
@@ -65,6 +86,6 @@ export async function saveHomeSection(admin: CurrentAdmin, formData: FormData) {
 
   if (result.error || !result.data) redirect('/admin/home?error=save')
   await logAdminEventWithClient(supabase, admin, id ? 'update' : 'create', 'home_section', result.data.id, { key: parsed.data.key })
-  revalidateContent(['home'], ['/', '/admin/home'])
+  revalidateContent(['home'], ['/', '/about', '/admin/home'])
   redirect('/admin/home?saved=1')
 }

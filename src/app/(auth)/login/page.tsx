@@ -11,8 +11,6 @@ interface LoginPageProps {
   }>
 }
 
-export const dynamic = 'force-dynamic'
-
 function getLoginErrorMessage(error: string | undefined) {
   if (!error) return null
 

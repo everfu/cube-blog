@@ -11,7 +11,7 @@ interface PostCardProps {
 
 export default function PostCard({ post }: PostCardProps) {
   const dateStr = formatDate(post.date)
-  const coverImage = post.cover ? getBackgroundImageUrl(post.cover, 480) : undefined
+  const coverImage = post.cover ? getBackgroundImageUrl(post.cover, 700, 248) : undefined
 
   return (
     <Link href={getPostHref(post)} className="block">

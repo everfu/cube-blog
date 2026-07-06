@@ -37,7 +37,7 @@ function StarRating({ rating, variant = 'default' }: { rating: number; variant?:
 export default function WatchedCard({ item }: WatchedCardProps) {
   const details = `${item.year} / ${item.country} / ${item.genre} / ${item.director}`
   const mobileImage = item.image ? getBackgroundImageUrl(item.image, 640) : undefined
-  const posterImage = item.image ? getBackgroundImageUrl(item.image, 240) : undefined
+  const posterImage = item.image ? getBackgroundImageUrl(item.image, 192, 288) : undefined
 
   return (
     <div className="card group overflow-hidden">
@@ -71,7 +71,7 @@ export default function WatchedCard({ item }: WatchedCardProps) {
 
       {/* 桌面端：横向布局 */}
       <div className="hidden md:flex gap-4 p-4">
-        <div className="w-24 h-36 bg-muted flex-shrink-0 flex items-center justify-center overflow-hidden">
+        <div className="w-[96px] h-[144px] bg-muted flex-shrink-0 flex items-center justify-center overflow-hidden">
           {posterImage ? (
             <figure role="img" aria-label={item.title} className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${posterImage})` }} />
           ) : (

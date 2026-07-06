@@ -397,6 +397,304 @@ create table if not exists public.admin_audit_logs (
   created_at timestamptz not null default now()
 );
 
+create or replace function public.get_admin_dashboard_overview()
+returns jsonb
+language plpgsql
+stable
+security invoker
+set search_path = ''
+as $$
+declare
+  overview jsonb;
+begin
+  if not (select private.is_admin()) then
+    raise exception 'admin privileges required'
+      using errcode = '42501';
+  end if;
+
+  select jsonb_build_object(
+    'generatedAt', now(),
+    'totals', jsonb_build_object(
+      'posts', (select count(*) from public.posts),
+      'comments', (select count(*) from public.comments),
+      'media', (
+        select count(*)
+        from storage.objects
+        where bucket_id = 'site-media'
+      ),
+      'tasks', (
+        (select count(*) from public.comments where status = 'pending')
+        + (select count(*) from public.posts where status = 'draft')
+        + (select count(*) from public.friend_link_applications where status = 'pending')
+      )
+    ),
+    'modules', jsonb_build_array(
+      jsonb_build_object(
+        'key', 'posts',
+        'label', '文章',
+        'href', '/admin/posts',
+        'icon', 'i-lucide-file-text',
+        'total', (select count(*) from public.posts),
+        'published', (select count(*) from public.posts where status = 'published'),
+        'draft', (select count(*) from public.posts where status = 'draft'),
+        'archived', (select count(*) from public.posts where status = 'archived'),
+        'pending', 0,
+        'warning', (select count(*) from public.posts where status = 'draft'),
+        'updatedAt', (select max(updated_at) from public.posts),
+        'description', '发布、草稿与近期内容'
+      ),
+      jsonb_build_object(
+        'key', 'comments',
+        'label', '评论',
+        'href', '/admin/comments',
+        'icon', 'i-lucide-message-square',
+        'total', (select count(*) from public.comments),
+        'published', (select count(*) from public.comments where status = 'approved'),
+        'draft', 0,
+        'archived', (select count(*) from public.comments where status in ('spam', 'deleted')),
+        'pending', (select count(*) from public.comments where status = 'pending'),
+        'warning', (select count(*) from public.comments where status in ('pending', 'spam')),
+        'updatedAt', (select max(created_at) from public.comments),
+        'description', '审核队列、垃圾评论与互动状态'
+      ),
+      jsonb_build_object(
+        'key', 'media',
+        'label', '媒体',
+        'href', '/admin/media',
+        'icon', 'i-lucide-image',
+        'total', (select count(*) from storage.objects where bucket_id = 'site-media'),
+        'published', (select count(*) from storage.objects where bucket_id = 'site-media'),
+        'draft', 0,
+        'archived', 0,
+        'pending', 0,
+        'warning', 0,
+        'updatedAt', (select max(coalesce(updated_at, created_at)) from storage.objects where bucket_id = 'site-media'),
+        'description', '站点素材与上传文件'
+      ),
+      jsonb_build_object(
+        'key', 'home',
+        'label', '首页',
+        'href', '/admin/home',
+        'icon', 'i-lucide-panels-top-left',
+        'total', (select count(*) from public.home_sections),
+        'published', (select count(*) from public.home_sections where enabled),
+        'draft', (select count(*) from public.home_sections where not enabled),
+        'archived', 0,
+        'pending', 0,
+        'warning', (select count(*) from public.home_sections where not enabled),
+        'updatedAt', (select max(updated_at) from public.home_sections),
+        'description', '首页区块开关与排序'
+      ),
+      jsonb_build_object(
+        'key', 'watched',
+        'label', '电影',
+        'href', '/admin/watched',
+        'icon', 'i-lucide-film',
+        'total', (select count(*) from public.watched_items),
+        'published', (select count(*) from public.watched_items where status = 'published'),
+        'draft', (select count(*) from public.watched_items where status = 'draft'),
+        'archived', (select count(*) from public.watched_items where status = 'archived'),
+        'pending', 0,
+        'warning', (select count(*) from public.watched_items where status = 'draft'),
+        'updatedAt', (select max(updated_at) from public.watched_items),
+        'description', 'Recently Watched 内容'
+      ),
+      jsonb_build_object(
+        'key', 'album',
+        'label', '相册',
+        'href', '/admin/album',
+        'icon', 'i-lucide-images',
+        'total', ((select count(*) from public.album_categories) + (select count(*) from public.album_photos)),
+        'published', ((select count(*) from public.album_categories where status = 'published') + (select count(*) from public.album_photos where status = 'published')),
+        'draft', ((select count(*) from public.album_categories where status = 'draft') + (select count(*) from public.album_photos where status = 'draft')),
+        'archived', ((select count(*) from public.album_categories where status = 'archived') + (select count(*) from public.album_photos where status = 'archived')),
+        'pending', 0,
+        'warning', ((select count(*) from public.album_categories where status = 'draft') + (select count(*) from public.album_photos where status = 'draft')),
+        'updatedAt', greatest((select max(updated_at) from public.album_categories), (select max(updated_at) from public.album_photos)),
+        'description', '相册分类与照片'
+      ),
+      jsonb_build_object(
+        'key', 'stack',
+        'label', 'Stack',
+        'href', '/admin/stack',
+        'icon', 'i-lucide-boxes',
+        'total', ((select count(*) from public.stack_categories) + (select count(*) from public.stack_items)),
+        'published', ((select count(*) from public.stack_categories where status = 'published') + (select count(*) from public.stack_items where status = 'published')),
+        'draft', ((select count(*) from public.stack_categories where status = 'draft') + (select count(*) from public.stack_items where status = 'draft')),
+        'archived', ((select count(*) from public.stack_categories where status = 'archived') + (select count(*) from public.stack_items where status = 'archived')),
+        'pending', 0,
+        'warning', ((select count(*) from public.stack_categories where status = 'draft') + (select count(*) from public.stack_items where status = 'draft')),
+        'updatedAt', greatest((select max(updated_at) from public.stack_categories), (select max(updated_at) from public.stack_items)),
+        'description', '硬件、软件与推荐状态'
+      ),
+      jsonb_build_object(
+        'key', 'friends',
+        'label', '友链',
+        'href', '/admin/friends',
+        'icon', 'i-lucide-network',
+        'total', ((select count(*) from public.friend_groups) + (select count(*) from public.friend_links)),
+        'published', ((select count(*) from public.friend_groups where status = 'published') + (select count(*) from public.friend_links where status = 'published')),
+        'draft', ((select count(*) from public.friend_groups where status = 'draft') + (select count(*) from public.friend_links where status = 'draft')),
+        'archived', ((select count(*) from public.friend_groups where status = 'archived') + (select count(*) from public.friend_links where status = 'archived')),
+        'pending', (select count(*) from public.friend_link_applications where status = 'pending'),
+        'warning', ((select count(*) from public.friend_link_applications where status = 'pending') + (select count(*) from public.friend_links where last_error is not null)),
+        'updatedAt', greatest((select max(updated_at) from public.friend_groups), (select max(updated_at) from public.friend_links), (select max(updated_at) from public.friend_link_applications)),
+        'description', '友链、朋友圈快照与申请'
+      ),
+      jsonb_build_object(
+        'key', 'settings',
+        'label', '设置',
+        'href', '/admin/settings',
+        'icon', 'i-lucide-fingerprint',
+        'total', 2,
+        'published', 2,
+        'draft', 0,
+        'archived', 0,
+        'pending', 0,
+        'warning', 0,
+        'updatedAt', (select max(updated_at) from public.comment_settings),
+        'description', '账号安全与评论配置'
+      ),
+      jsonb_build_object(
+        'key', 'audit',
+        'label', '审计',
+        'href', '/admin/audit',
+        'icon', 'i-lucide-activity',
+        'total', (select count(*) from public.admin_audit_logs),
+        'published', (select count(*) from public.admin_audit_logs),
+        'draft', 0,
+        'archived', 0,
+        'pending', 0,
+        'warning', 0,
+        'updatedAt', (select max(created_at) from public.admin_audit_logs),
+        'description', '最近后台关键操作'
+      )
+    ),
+    'tasks', jsonb_build_array(
+      jsonb_build_object(
+        'id', 'pending-comments',
+        'label', '待审评论',
+        'value', (select count(*) from public.comments where status = 'pending'),
+        'href', '/admin/comments?status=pending',
+        'tone', case when (select count(*) from public.comments where status = 'pending') > 0 then 'danger' else 'success' end,
+        'description', '需要审核后才会进入前台评论区',
+        'module', 'comments'
+      ),
+      jsonb_build_object(
+        'id', 'draft-posts',
+        'label', '草稿文章',
+        'value', (select count(*) from public.posts where status = 'draft'),
+        'href', '/admin/posts?status=draft',
+        'tone', case when (select count(*) from public.posts where status = 'draft') > 0 then 'warning' else 'muted' end,
+        'description', '可继续编辑或发布',
+        'module', 'posts'
+      ),
+      jsonb_build_object(
+        'id', 'friend-applications',
+        'label', '友链申请',
+        'value', (select count(*) from public.friend_link_applications where status = 'pending'),
+        'href', '/admin/friends',
+        'tone', case when (select count(*) from public.friend_link_applications where status = 'pending') > 0 then 'warning' else 'muted' end,
+        'description', '待处理的外部友链申请',
+        'module', 'friends'
+      ),
+      jsonb_build_object(
+        'id', 'feed-errors',
+        'label', '朋友圈异常',
+        'value', (select count(*) from public.friend_links where last_error is not null),
+        'href', '/admin/friends',
+        'tone', case when (select count(*) from public.friend_links where last_error is not null) > 0 then 'warning' else 'muted' end,
+        'description', '最近刷新时出现错误的 feed',
+        'module', 'friends'
+      )
+    ),
+    'recentPosts', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id', id,
+        'year', year,
+        'slug', slug,
+        'title', title,
+        'date', coalesce(published_at, created_at),
+        'excerpt', excerpt,
+        'tags', tags,
+        'cover', cover,
+        'category', category,
+        'recent', recent,
+        'viewCount', view_count,
+        'likeCount', like_count,
+        'reactions', '{}'::jsonb,
+        'content', content,
+        'status', status,
+        'updatedAt', updated_at
+      ))
+      from (
+        select *
+        from public.posts
+        order by updated_at desc
+        limit 6
+      ) recent_posts
+    ), '[]'::jsonb),
+    'pendingComments', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id', id,
+        'pagePath', page_path,
+        'postId', post_id,
+        'parentId', parent_id,
+        'authorName', author_name,
+        'authorAvatarUrl', null,
+        'emailHash', email_hash,
+        'website', website,
+        'body', body,
+        'authMode', auth_mode,
+        'locationLabel', location_label,
+        'uaSummary', trim(both ' / ' from concat_ws(' / ', ua_browser, ua_os, ua_device)),
+        'likeCount', like_count,
+        'status', status,
+        'isOwnPending', false,
+        'createdAt', created_at,
+        'authorEmail', author_email,
+        'userAgent', user_agent,
+        'uaRequestId', ua_request_id,
+        'notifiedOwnerAt', notified_owner_at,
+        'notifiedReplyAt', notified_reply_at
+      ))
+      from (
+        select *
+        from public.comments
+        where status = 'pending'
+        order by created_at desc
+        limit 5
+      ) pending_comments
+    ), '[]'::jsonb),
+    'activity', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id', id,
+        'actorId', actor_id,
+        'action', action,
+        'entityType', entity_type,
+        'entityId', entity_id,
+        'metadata', metadata,
+        'createdAt', created_at,
+        'label', concat(action, ':', entity_type),
+        'href', null
+      ))
+      from (
+        select *
+        from public.admin_audit_logs
+        order by created_at desc
+        limit 8
+      ) recent_activity
+    ), '[]'::jsonb)
+  )
+  into overview;
+
+  return overview;
+end;
+$$;
+
+revoke all on function public.get_admin_dashboard_overview() from public, anon;
+grant execute on function public.get_admin_dashboard_overview() to authenticated;
+
 create index if not exists posts_public_idx on public.posts(status, published_at desc);
 create index if not exists posts_year_slug_idx on public.posts(year, slug);
 create index if not exists post_likes_post_id_idx on public.post_likes(post_id);
@@ -854,6 +1152,11 @@ on conflict (key) do nothing;
 
 insert into public.friend_application_settings (key, value)
 values ('application_form', '{"enabled": false}'::jsonb)
+on conflict (key) do nothing;
+
+insert into public.home_sections (key, title, subtitle, enabled, sort_order, metadata)
+values
+  ('about', 'About', '关于页主视觉', true, 40, '{"imageUrl": "/og-image.png", "imageCaption": "Fuever''s Blog"}'::jsonb)
 on conflict (key) do nothing;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { cacheLife } from 'next/cache'
 import { SectionDivider } from '@/components/common'
 import { siteConfig } from '@/config/site'
 import { OnlineCount } from '@/components/ui'
@@ -9,7 +10,10 @@ const SOCIAL_LINKS = [
   { href: '/atom.xml', icon: 'i-lucide-rss', label: 'Atom Feed', external: false },
 ] as const
 
-export default function Footer() {
+export default async function Footer() {
+  'use cache'
+  cacheLife('days')
+
   const currentYear = new Date().getFullYear()
 
   return (

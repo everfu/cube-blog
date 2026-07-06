@@ -1,4 +1,4 @@
-import { getAdminPosts } from '@/server/posts/adapters/admin'
+import { getAdminPosts, getPostCountByStatus } from '@/server/posts/adapters/admin'
 import { requireAdminPage } from '@/lib/auth/require-admin'
 import {
   AdminPageHeader,
@@ -8,8 +8,6 @@ import AdminPostsFilters from '@/components/admin/AdminPostsFilters'
 import AdminPostsList from '@/components/admin/AdminPostsList'
 import AdminPostsOverview from '@/components/admin/AdminPostsOverview'
 import type { PostStatus } from '@/types/supabase'
-
-export const dynamic = 'force-dynamic'
 
 interface AdminPostsPageProps {
   searchParams: Promise<{
@@ -29,20 +27,24 @@ export default async function AdminPostsPage({ searchParams }: AdminPostsPagePro
   await requireAdminPage('/admin/posts')
   const params = await searchParams
   const status = isPostStatus(params.status) ? params.status : params.status === 'all' ? 'all' : undefined
-  const posts = await getAdminPosts({
-    status,
-    keyword: params.keyword,
-    year: params.year,
-    category: params.category,
-    recent: params.recent === '1',
-  })
+  const [posts, counts] = await Promise.all([
+    getAdminPosts({
+      status,
+      keyword: params.keyword,
+      year: params.year,
+      category: params.category,
+      recent: params.recent === '1',
+    }),
+    getPostCountByStatus(),
+  ])
+  const total = counts.published + counts.draft + counts.archived
 
   return (
     <section className="space-y-5">
       <AdminPageHeader
         eyebrow="内容 / 文章管理"
         title="文章管理"
-        description={`管理发布内容，共 ${posts.length} 篇，累计 ${posts.reduce((sum, post) => sum + post.viewCount, 0)} 次浏览。`}
+        description={`管理发布内容，共 ${total} 篇。`}
         actions={(
           <AdminButtonLink href="/admin/posts/new" icon="i-lucide-plus" variant="primary">
             新建文章
@@ -50,7 +52,7 @@ export default async function AdminPostsPage({ searchParams }: AdminPostsPagePro
         )}
       />
 
-      <AdminPostsFilters params={params} summary={<AdminPostsOverview posts={posts} />} />
+      <AdminPostsFilters params={params} summary={<AdminPostsOverview posts={posts} counts={counts} />} />
       <AdminPostsList posts={posts} />
     </section>
   )

@@ -1,10 +1,11 @@
 import { saveHomeSectionAction } from '@/app/admin/actions'
 import { getAdminHomeSections } from '@/server/home/adapters/page'
-import { mergeDefaultHomeSections, parseHeroMetadata, parseListMetadata } from '@/server/home/adapters/page'
+import { mergeDefaultHomeSections, parseAboutMetadata, parseHeroMetadata, parseListMetadata } from '@/server/home/adapters/page'
 import { requireAdminPage } from '@/lib/auth/require-admin'
 import {
   AdminCheckbox,
   AdminField,
+  AdminFileInput,
   AdminFormActions,
   AdminFormGrid,
   AdminInput,
@@ -15,14 +16,14 @@ import {
   AdminSubmitButton,
   AdminTextarea,
 } from '@/components/admin/AdminPrimitives'
-
-export const dynamic = 'force-dynamic'
+import AdminMediaHint from '@/components/admin/AdminMediaHint'
 
 type HomeSectionFormData = ReturnType<typeof mergeDefaultHomeSections>[number]
 
 function SectionForm({ section }: { section: HomeSectionFormData }) {
   const heroMetadata = section.key === 'hero' ? parseHeroMetadata(section.metadata) : null
   const listMetadata = section.key === 'recent_posts' || section.key === 'recently_watched' ? parseListMetadata(section.metadata) : null
+  const aboutMetadata = section.key === 'about' ? parseAboutMetadata(section.metadata) : null
 
   return (
     <form action={saveHomeSectionAction}>
@@ -70,6 +71,19 @@ function SectionForm({ section }: { section: HomeSectionFormData }) {
             <AdminInput name="limit" type="number" min={1} max={12} defaultValue={listMetadata.limit} />
           </AdminField>
         )}
+        {aboutMetadata && (
+          <>
+            <AdminField label="图片 URL" span={2} hint={<AdminMediaHint folder="about" />}>
+              <AdminInput name="imageUrl" defaultValue={aboutMetadata.imageUrl} placeholder="/og-image.png 或 https://..." />
+            </AdminField>
+            <AdminField label="上传图片" span={2}>
+              <AdminFileInput name="imageFile" accept="image/*" />
+            </AdminField>
+            <AdminField label="右下角文字" span={2}>
+              <AdminInput name="imageCaption" defaultValue={aboutMetadata.imageCaption} placeholder="图片标题" />
+            </AdminField>
+          </>
+        )}
       </AdminFormGrid>
       <AdminFormActions>
         <AdminSubmitButton icon="i-lucide-save">保存区块</AdminSubmitButton>
@@ -84,9 +98,9 @@ export default async function AdminHomePage() {
 
   return (
     <section className="space-y-6">
-      <AdminPageHeader eyebrow="内容运营 / 首页编排" title="首页编排" description="管理首页区块开关、排序和展示参数。" />
+      <AdminPageHeader eyebrow="内容运营 / 页面编排" title="页面编排" description="管理首页与 About 固定区块开关、排序和展示参数。" />
       <AdminPanel>
-        <AdminPanelHeader title="固定区块" description="首页只渲染系统支持的区块；保存后会刷新首页缓存。" icon="i-lucide-layout-template" />
+        <AdminPanelHeader title="固定区块" description="首页只渲染首页区块；About 配置会刷新关于页缓存。" icon="i-lucide-layout-template" />
       </AdminPanel>
       <div className="space-y-3">
         {sections.map((section, index) => (
