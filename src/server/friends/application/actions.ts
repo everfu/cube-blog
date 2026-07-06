@@ -1,13 +1,14 @@
 'use server'
 
+import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import type { CurrentAdmin } from '@/lib/auth/admin'
-import type { ContentStatus, FriendApplicationStatus } from '@/types/supabase'
+import type { ContentStatus, Database, FriendApplicationStatus } from '@/types/supabase'
 import { logAdminEventWithClient } from '@/server/_shared/audit/log-admin-event-with-client'
-import { revalidateContent } from '@/server/_shared/cache/revalidate'
+import { revalidateContent, revalidatePaths } from '@/server/_shared/cache/revalidate'
 import { optionalTextSchema, optionalUrlSchema, parseCsv, resolveImageUrl, statusSchema, textOrNull } from '@/server/_shared/actions/form'
 import { parseFeedXml } from '@/server/feeds/application/parse-feed'
 import { getFriendFavicon } from '@/server/feeds/application/utils'
@@ -50,6 +51,8 @@ const friendApplicationApprovalSchema = z.object({
   id: z.string().uuid(),
   groupId: z.string().uuid(),
 })
+
+type FriendFeedSnapshotInsert = Database['public']['Tables']['friend_feed_snapshots']['Insert']
 
 export async function saveFriendGroup(admin: CurrentAdmin, formData: FormData) {
   const parsed = friendGroupSchema.safeParse(Object.fromEntries(formData))
@@ -225,7 +228,7 @@ export async function approveFriendApplication(admin: CurrentAdmin, formData: Fo
 export async function refreshFriendFeedSnapshots(admin: CurrentAdmin) {
   const supabase = await createClient()
   const service = createAdminClient()
-  const [{ data: links, error }, { data: mutedLinks, error: mutedError }] = await Promise.all([
+  const [{ data: links, error }, { data: allLinks, error: allLinksError }] = await Promise.all([
     service
       .from('friend_links')
       .select('id, author, sitenick, link_url, feed_url, avatar_url, archs')
@@ -234,24 +237,30 @@ export async function refreshFriendFeedSnapshots(admin: CurrentAdmin) {
       .not('feed_url', 'is', null),
     service
       .from('friend_links')
-      .select('id')
-      .eq('feed_muted', true),
+      .select('id, status, feed_muted, feed_url'),
   ])
 
-  if (error || mutedError || !links) redirect('/admin/friends?error=feed-load')
+  if (error || allLinksError || !links) redirect('/admin/friends?error=feed-load')
 
-  const mutedIds = (mutedLinks || []).map(link => link.id)
-  if (mutedIds.length > 0) {
+  const staleSnapshotLinkIds = (allLinks || [])
+    .filter(link => link.status !== 'published' || link.feed_muted || !link.feed_url)
+    .map(link => link.id)
+
+  if (staleSnapshotLinkIds.length > 0) {
     const { error: clearError } = await service
       .from('friend_feed_snapshots')
       .delete()
-      .in('friend_link_id', mutedIds)
+      .in('friend_link_id', staleSnapshotLinkIds)
 
     if (clearError) redirect('/admin/friends?error=feed-save')
   }
 
-  const rows = []
+  let inserted = 0
   for (const link of links) {
+    const checkedAt = new Date().toISOString()
+    let rows: FriendFeedSnapshotInsert[] = []
+    let lastError: string | null = null
+
     try {
       const response = await fetch(link.feed_url || '', {
         headers: {
@@ -265,7 +274,7 @@ export async function refreshFriendFeedSnapshots(admin: CurrentAdmin) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
       const parsed = parseFeedXml(await response.text(), 10)
-      rows.push(...parsed.filter(item => item.pubDate).map(item => ({
+      rows = parsed.filter(item => item.pubDate).map(item => ({
         friend_link_id: link.id,
         author: link.author,
         sitenick: link.sitenick,
@@ -278,23 +287,40 @@ export async function refreshFriendFeedSnapshots(admin: CurrentAdmin) {
         cover_url: item.cover,
         pub_date: item.pubDate,
         source_status: { ok: true },
-      })))
-      await service.from('friend_links').update({ last_checked_at: new Date().toISOString(), last_error: null }).eq('id', link.id)
+      }))
     } catch (feedError) {
-      await service.from('friend_links').update({
-        last_checked_at: new Date().toISOString(),
-        last_error: feedError instanceof Error ? feedError.message : String(feedError),
-      }).eq('id', link.id)
+      lastError = feedError instanceof Error ? feedError.message : String(feedError)
     }
+
+    const { error: clearError } = await service
+      .from('friend_feed_snapshots')
+      .delete()
+      .eq('friend_link_id', link.id)
+
+    if (clearError) redirect('/admin/friends?error=feed-save')
+
+    if (lastError) {
+      await service.from('friend_links').update({
+        last_checked_at: checkedAt,
+        last_error: lastError,
+      }).eq('id', link.id)
+      continue
+    }
+
+    if (rows.length > 0) {
+      const { error: insertError } = await service.from('friend_feed_snapshots').insert(rows)
+      if (insertError) redirect('/admin/friends?error=feed-save')
+      inserted += rows.length
+    }
+
+    await service.from('friend_links').update({
+      last_checked_at: checkedAt,
+      last_error: null,
+    }).eq('id', link.id)
   }
 
-  if (rows.length > 0) {
-    await service.from('friend_feed_snapshots').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-    const { error: insertError } = await service.from('friend_feed_snapshots').insert(rows)
-    if (insertError) redirect('/admin/friends?error=feed-save')
-  }
-
-  await logAdminEventWithClient(supabase, admin, 'refresh_feed_snapshots', 'friend_feed_snapshots', null, { inserted: rows.length })
-  revalidateContent(['friends'], ['/friends', '/api/friends', '/admin/friends'])
+  await logAdminEventWithClient(supabase, admin, 'refresh_feed_snapshots', 'friend_feed_snapshots', null, { inserted })
+  updateTag('friends')
+  revalidatePaths(['/friends', '/api/friends', '/admin/friends'])
   redirect('/admin/friends?refreshed=1')
 }

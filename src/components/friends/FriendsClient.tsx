@@ -163,6 +163,7 @@ export default function FriendsClient({ initialData }: FriendsClientProps) {
 
     try {
       const response = await fetch('/api/friends', {
+        cache: 'no-store',
         headers: {
           Accept: 'application/json',
         },
