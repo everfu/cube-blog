@@ -1,14 +1,7 @@
-import { cacheLife, cacheTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isSupabaseAdminConfigured } from '@/lib/supabase/config'
 import { mapPost, mapPostMetadata, postMetadataSelect, postSelect, sortByDateDesc } from '../data/mapper'
 import type { Post, PostMetadata } from '../contracts/types'
-
-const publicPostsCacheLife = {
-  stale: 300,
-  revalidate: 300,
-  expire: 3600,
-} as const
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '👏', '🤔'] as const
 
@@ -57,24 +50,15 @@ async function fetchAllPosts(): Promise<PostMetadata[]> {
 }
 
 export async function getAllPosts(): Promise<PostMetadata[]> {
-  'use cache'
-  cacheTag('posts', 'home')
-  cacheLife(publicPostsCacheLife)
   return fetchAllPosts()
 }
 
 export async function getRecentPosts(limit?: number): Promise<PostMetadata[]> {
-  'use cache'
-  cacheTag('posts', 'home')
-  cacheLife(publicPostsCacheLife)
   const posts = (await getAllPosts()).filter(post => post.recent)
   return typeof limit === 'number' ? posts.slice(0, limit) : posts
 }
 
 export async function getMorePosts(): Promise<PostMetadata[]> {
-  'use cache'
-  cacheTag('posts')
-  cacheLife(publicPostsCacheLife)
   return (await getAllPosts()).filter(post => !post.recent)
 }
 
@@ -102,8 +86,5 @@ async function fetchPostBySlug(
 }
 
 export async function getPostBySlug(year: string, slug: string): Promise<Post | null> {
-  'use cache'
-  cacheTag('posts')
-  cacheLife(publicPostsCacheLife)
   return fetchPostBySlug(year, slug)
 }
