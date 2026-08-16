@@ -7,6 +7,7 @@ import type { FriendsResponse } from '@/features/friends/types'
 
 export const metadata = { title: '朋友动态', description: '朋友们最近写下的内容' }
 export const dynamic = 'force-dynamic'
+export const maxDuration = 20
 
 function isTrustedRequestHost(host: string) {
   const hostname = host.replace(/:\d+$/, '').toLowerCase()

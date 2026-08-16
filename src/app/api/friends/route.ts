@@ -2,6 +2,8 @@ import { getCachedFriends } from '@/features/friends/aggregate'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+export const runtime = 'nodejs'
+export const maxDuration = 20
 
 const noStoreHeaders = {
   'Cache-Control': 'no-store, max-age=0',
