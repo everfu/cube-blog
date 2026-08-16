@@ -1,0 +1,298 @@
+---
+id: "0361f8b33bdb"
+title: "Go 学习：day01"
+excerpt: "惊奇的写了一个 Hello, World！记录 Mac 下 Go 环境安装，变量常量、if 与 switch 的语法，操作单元测试编写及命名返回值的用法。"
+date: "2026-06-19"
+year: "2026"
+slug: "learn-go-day01"
+category: "DAILY"
+cover: "/media/posts/2026-learn-go-day01.png"
+---
+## 开始学习 Go 啦
+
+观察很久，发现身边使用的人不多，但是好像有点迷它的语法
+
+## 安装一下 Go
+
+在 Mac 下做任何关于开发的都需要先安装 Xcode-tool
+
+bash
+
+```
+xcode-select --install
+```
+
+然后是 HomeBrew ，这个也是 Mac 上开发必装的
+
+有很多办法，参考 [清华源](https://mirrors.tuna.tsinghua.edu.cn/help/homebrew/)
+
+安装 Go
+
+bash
+
+```
+brew install go
+```
+
+终端执行 go help
+
+bash
+
+```
+go help
+```
+
+txt
+
+```
+everfu@MacBook-Pro ~ % go help
+Go is a tool for managing Go source code.
+
+Usage:
+
+	go <command> [arguments]
+
+The commands are:
+
+	bug         start a bug report
+	build       compile packages and dependencies
+	clean       remove object files and cached files
+	doc         show documentation for package or symbol
+	env         print Go environment information
+	fix         update packages to use new APIs
+	fmt         gofmt (reformat) package sources
+	generate    generate Go files by processing source
+	get         add dependencies to current module and install them
+	install     compile and install packages and dependencies
+	list        list packages or modules
+	mod         module maintenance
+	run         compile and run Go program
+	test        test packages
+	tool        run specified go tool
+	version     print Go version
+	vet         report likely mistakes in packages
+
+Use "go help <command>" for more information about a command.
+
+Additional help topics:
+
+	buildconstraint build constraints
+	buildmode       build modes
+	c               calling between Go and C
+	cache           build and test caching
+	environment     environment variables
+	filetype        file types
+	go.mod          the go.mod file
+	gopath          GOPATH environment variable
+	gopath-get      legacy GOPATH go get
+	goproxy         module proxy protocol
+	importpath      import path syntax
+	modules         modules, module versions, and more
+	module-get      module-aware go get
+	module-auth     module authentication using go.sum
+	packages        package lists and patterns
+	private         configuration for downloading non-public code
+	testflag        testing flags
+	testfunc        testing functions
+	vcs             controlling version control with GOVCS
+
+Use "go help <topic>" for more information about that topic.
+```
+
+到此，电脑就有了 go 的开发环境
+
+打上国内七牛的镜像
+
+bash
+
+```
+export GO111MODULE=on
+export GOPROXY=https://goproxy.cn
+```
+
+## Hello, World!
+
+众所都周知，万物的起源都是来自一句 `Hello, World!`
+
+go
+
+```
+package main
+
+// 引入 go 的 I/O
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+}
+```
+
+bash
+
+```
+go hello-world.go
+Hello, World!
+```
+
+首先解释一下， go 的特点，它是一门静态语言，但是使用的体验近似动态语言，很好用
+
+go 使用 `func` 定义函数，与 python 的语法近似，但又不会与 python 那样严格锁进
+
+## 调试和语法检测
+
+既然我们不是初学者，那就手动装两个插件吧
+
+`golangci-lint` 语法检测
+
+bash
+
+```
+go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+```
+
+`go-delve` 调试
+
+bash
+
+```
+go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+```
+
+让我们创建一个测试文件
+
+go
+
+```
+package main
+
+import "testing"
+
+func TestHello(t *testing.T) {
+    got := "Hello, World"
+    want := "Hello, World"
+
+    if got != want {
+        t.Errorf("got %q want %q", got, want)
+    }
+}
+```
+
+在 go 中编写测试和函数很类似，有一些规则上的定义：
+
+- 程序需要统一命名设计 `xxx_test.go`，例如：`01-hello-world_test.go`
+- 测试函数的命名必须以 `Test` 单词开始
+- 测试函数只接受一个参数即：`t *testing.T`
+
+`if`：与其他语言的语法一致，但是不需要带括号，好评
+
+`声明变量`：在 go 中通过 `varName := value` 的语法声明变量，允许在测试时重要一些值使代码更具可读性
+
+运行一下
+
+bash
+
+```
+go test
+PASS
+ok      efu.me/m        0.193s
+```
+
+`switch`
+
+go
+
+```
+func Hello(name string, language string) string {
+	if name == "" {
+		name = "World"
+	}
+
+	switch language {
+		case spanish:
+			helloPrefix = spanishHelloPrefix
+		case french:
+			helloPrefix = frenchHelloPrefix
+	}
+
+	return helloPrefix + name
+}
+```
+
+## 完整代码
+
+go
+
+```
+// go 必须有一个 main 包，且必须有一个 main 函数作为程序的入口点
+package main
+
+// 导入 go 的 I/O 包
+import "fmt"
+
+const spanish = "Spanish"
+const french = "French"
+const helloPrefix = "Hello, "
+const spanishHelloPrefix = "Hola, "
+const frenchHelloPrefix = "Bonjour, "
+
+func Hello(name string, language string) string {
+	if name == "" {
+		name = "World"
+	}
+
+	return greetingPrefix(language) + name
+}
+
+func greetingPrefix(language string) (prefix string) {
+	switch language {
+		case spanish:
+			prefix = spanishHelloPrefix
+		case french:
+			prefix = frenchHelloPrefix
+		default:
+			prefix = helloPrefix
+	}
+	return
+}
+
+// main 函数
+func main() {
+	// 打印
+	fmt.Println(Hello("world", "English"))
+}
+```
+
+go
+
+```
+package main
+
+import "testing"
+
+func TestHello(t *testing.T) {
+	t.Run("in Spanish", func(t *testing.T) {
+		got := Hello("Elodie", "Spanish")
+		want := "Hola, Elodie"
+
+		if got != want {
+			t.Errorf("got %q want %q", got, want)
+		}
+	})
+	t.Run("in French", func(t *testing.T) {
+		got := Hello("Elodie", "French")
+		want := "Bonjour, Elodie"
+
+		if got != want {
+			t.Errorf("got %q want %q", got, want)
+		}
+	})
+}
+```
+
+## 总结
+
+- `命名返回值`：大概就是你如果不给它赋值，它就是这个类型值的默认值如：`int:0`、`string:""`
+- `switch`：与其他语言类似
+
+***编写最少量的代码使其通过，以获得可以运行的程序***
+😯

@@ -1,17 +1,13 @@
-import { Header, Footer } from '@/components/layout'
+import { SiteFooter } from '@/components/SiteFooter'
+import { SiteHeader } from '@/components/SiteHeader'
+import { ImageRevealProvider } from '@/features/images'
 
-export default function SiteLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="site-shell relative min-h-screen px-4 md:px-0">
-      <Header />
-      <main className="relative z-10 mx-auto max-w-site">
-        {children}
-      </main>
-      <Footer />
+    <div className="page-grid">
+      <SiteHeader />
+      <main className="site-main"><ImageRevealProvider>{children}</ImageRevealProvider></main>
+      <SiteFooter />
     </div>
   )
 }

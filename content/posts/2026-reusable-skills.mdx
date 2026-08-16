@@ -1,0 +1,121 @@
+---
+id: "c0dbe5cdffd2"
+title: "Reusable Skills：让 Agent 技能跨项目复用"
+excerpt: "把 Agent Skills 沉淀成一份源、软链复用，跨工具和项目都能用上"
+date: "2026-06-19"
+year: "2026"
+slug: "reusable-skills"
+category: "TECH"
+cover: "/media/posts/2026-reusable-skills.png"
+---
+## 技能不该绑死在某个项目里
+
+用 Claude Code 这类 Agent 久了，你会攒下一些“怎么把事情做对”的经验：操作 Supabase 时先查 changelog、写 Postgres 迁移时的安全清单、提交前怎么跑测试……这些经验如果只活在你的记忆和聊天记录里，换个项目就得重新交代一遍。
+
+Agent Skills 就是用来沉淀这类经验的。一个 Skill 本质上是一个目录，核心是一份 `SKILL.md`：
+
+markdown
+
+```
+---
+name: supabase
+description: "Use when doing ANY task involving Supabase. Triggers: Database, Auth, Edge Functions, RLS, migrations, supabase-js, @supabase/ssr ..."
+metadata:
+  author: supabase
+  version: "0.1.2"
+---
+
+# Supabase
+
+## Core Principles
+...
+```
+
+frontmatter 里只有两样东西最关键：`name` 和 `description`。Agent 在决定“这次任务要不要加载这个技能”时，读的就是 `description`。所以 description 要写清楚触发条件（Triggers），而不是泛泛地说“和 Supabase 有关”。
+
+`description` 是技能被检索到的唯一入口。写得越具体、触发词越全，Agent 越能在对的时机想起它；写得太笼统，它就只是躺在目录里。
+
+## 渐进式披露：别让上下文一次性爆掉
+
+一个成熟的技能往往不止一份 `SKILL.md`。以本站用的 `supabase` 技能为例：
+
+text
+
+```
+.agents/skills/supabase/
+├── SKILL.md
+├── CHANGELOG.md
+├── references/
+│   └── skill-feedback.md
+└── assets/
+    └── feedback-issue-template.md
+```
+
+这里有个容易被忽略的设计：`SKILL.md` 是入口，但它不需要把所有细节都塞进去。它更像一份目录，告诉 Agent“详细规则在 `references/` 里，模板在 `assets/` 里，需要时再去读”。
+
+这对吗？对。Agent 的上下文窗口是有限的，一上来就灌进几千行规则，既浪费 token 又稀释注意力。让技能按需展开——先读入口，命中相关任务再加载子文档——才是可持续的做法。
+
+## 复用的关键：一份源，多处链接
+
+技能要“可复用”，核心问题是：同一份技能，怎么同时被不同的工具、不同的项目用上？
+
+不同 Agent 工具约定的技能目录不一样。Claude Code 读 `.claude/skills/`，更通用的约定是 `.agents/skills/`。如果每个目录都塞一份拷贝，维护就成了灾难——改一处规则要同步好几份。
+
+本站的做法是：**真身只放一份，其余全用符号链接指过去。**
+
+bash
+
+```
+# 真身集中在 .agents/skills/
+.agents/skills/supabase/
+
+# .claude/skills/ 里只放软链
+.claude/skills/supabase -> ../../.agents/skills/supabase
+```
+
+看一眼实际的目录就明白了：
+
+bash
+
+```
+$ ls -la .claude/skills
+supabase -> ../../.agents/skills/supabase
+supabase-postgres-best-practices -> ../../.agents/skills/supabase-postgres-best-practices
+```
+
+这样一来：
+
+- 技能内容只有一个事实来源（single source of truth），改 `SKILL.md` 不用同步多份；
+- 想接入新的 Agent 工具，只要再补一条软链，不用复制；
+- 用相对路径（`../../`）而不是绝对路径，整个仓库被 clone 到任何机器上链接都不会断。
+
+## 跨项目复用：从仓库内到机器级
+
+仓库内的软链解决了“一个项目里多个工具共享”。那“多个项目共享同一套技能”呢？
+
+思路是一样的，只是把源头往上提。比如把通用技能放在一个独立仓库或用户级目录里，再在各个项目里软链回来：
+
+bash
+
+```
+# 用户级技能库（举例）
+~/.agents/skills/supabase/
+
+# 在某个项目里软链回来
+ln -s ~/.agents/skills/supabase .claude/skills/supabase
+```
+
+要不要这么做，取决于技能的“通用度”。像 Supabase 操作规范这种和具体业务无关的，适合上提到机器级共享；而和某个项目强绑定的技能（比如“本站发布文章的流程”），就该留在项目仓库里，跟着代码一起版本化。
+
+判断一条技能放哪：问自己“换个项目它还成立吗”。成立，就往上提、做成共享；只对当前项目成立，就留在仓库里。
+
+## 一点经验
+
+写了一阵子技能后，几条值得记下来的：
+
+1. **description 决定生死。** 技能再好，触发词没写对，Agent 想不起来用它，等于没有。
+2. **入口轻、细节沉。** `SKILL.md` 保持精简，把长规则、模板、示例拆到 `references/` 和 `assets/`，按需加载。
+3. **一份源，软链复用。** 不要复制技能目录，用符号链接 + 相对路径，让一份内容服务所有工具和项目。
+4. **跟着版本走。** 给技能加 `version` 和 `CHANGELOG.md`，它和代码一样会演进，能回溯才靠得住。
+
+技能的价值不在于写得多漂亮，而在于它能在对的时刻、被对的工具、在任意一个项目里重新用上。可复用，才是技能真正的护城河。

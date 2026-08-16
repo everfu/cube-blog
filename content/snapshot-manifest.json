@@ -1,0 +1,106 @@
+{
+  "source": "https://blog.efu.me",
+  "capturedAt": "2026-08-15T12:15:05.120Z",
+  "posts": [
+    {
+      "url": "https://blog.efu.me/2026/eng-word",
+      "file": "content/posts/2026-eng-word.mdx",
+      "cover": "/media/posts/2026-eng-word.jpg",
+      "headings": [
+        "一、核心词汇和词族",
+        "二、必背固定搭配",
+        "三、重点语法句型",
+        "1. 就近原则",
+        "2. 形式主语",
+        "3. 形式宾语",
+        "4. used to 系列",
+        "5. 偏好与选择",
+        "6. be of + 抽象名词",
+        "四、写作常用表达",
+        "五、规范例句",
+        "六、易错点速记"
+      ]
+    },
+    {
+      "url": "https://blog.efu.me/2026/eng-translate",
+      "file": "content/posts/2026-eng-translate.mdx",
+      "cover": "/media/posts/2026-eng-translate.jpg",
+      "headings": [
+        "一、定语从句",
+        "二、被动语态"
+      ]
+    },
+    {
+      "url": "https://blog.efu.me/2026/no-emotional-dump",
+      "file": "content/posts/2026-no-emotional-dump.mdx",
+      "cover": "/media/posts/2026-no-emotional-dump.png",
+      "headings": [
+        "倾听应该是有来有回的",
+        "安慰不是无限供应的",
+        "我也需要被看见",
+        "好的关系是双向的"
+      ]
+    },
+    {
+      "url": "https://blog.efu.me/2026/reusable-skills",
+      "file": "content/posts/2026-reusable-skills.mdx",
+      "cover": "/media/posts/2026-reusable-skills.png",
+      "headings": [
+        "技能不该绑死在某个项目里",
+        "渐进式披露：别让上下文一次性爆掉",
+        "复用的关键：一份源，多处链接",
+        "跨项目复用：从仓库内到机器级",
+        "一点经验"
+      ]
+    },
+    {
+      "url": "https://blog.efu.me/2026/learn-go-day01",
+      "file": "content/posts/2026-learn-go-day01.mdx",
+      "cover": "/media/posts/2026-learn-go-day01.png",
+      "headings": [
+        "开始学习 Go 啦",
+        "安装一下 Go",
+        "Hello, World!",
+        "调试和语法检测",
+        "完整代码",
+        "总结"
+      ]
+    },
+    {
+      "url": "https://blog.efu.me/2025/super-for-friends",
+      "file": "content/posts/2025-super-for-friends.mdx",
+      "cover": "/media/posts/2025-super-for-friends.png",
+      "headings": [
+        "朋友圈聚合",
+        "从友链页抓取，还是手动维护 Feed",
+        "渐进增强：没有 Feed 也能做普通友链",
+        "Feed 解析",
+        "RSS 和 Atom 的差异",
+        "统一文章结构",
+        "服务端缓存",
+        "避免每次访问都请求所有来源",
+        "pending request 合并",
+        "前端展示",
+        "时间线、搜索与筛选",
+        "来源失败时的降级",
+        "小结"
+      ]
+    },
+    {
+      "url": "https://blog.efu.me/2025/cdn-for-solitude",
+      "file": "content/posts/2025-cdn-for-solitude.mdx",
+      "cover": "/media/posts/2025-cdn-for-solitude.gif",
+      "headings": [
+        "什么是 CDN ？",
+        "在 Solitude 上配置 CDN",
+        "Internal",
+        "Third Party",
+        "Version",
+        "Custom Format",
+        "Options",
+        "自建第三方插件 CDN"
+      ]
+    }
+  ],
+  "failures": []
+}

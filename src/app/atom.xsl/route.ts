@@ -1,11 +1,8 @@
-import { atomXsl } from '@/server/feeds/contracts/atom-xsl'
+import { atomXsl } from '@/features/feeds/atom-xsl'
+import { createDocumentResponse } from '@/features/feeds/documents'
 
-export async function GET() {
-  return new Response(atomXsl, {
-    headers: {
-      'Content-Type': 'text/xsl; charset=utf-8',
-      'Content-Disposition': 'inline; filename="atom.xsl"',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-    },
-  })
+export const dynamic = 'force-static'
+
+export function GET() {
+  return createDocumentResponse(atomXsl, 'atom.xsl', 'text/xsl')
 }

@@ -1,25 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  cacheComponents: true,
+  trailingSlash: true,
+  allowedDevOrigins: ['127.0.0.1'],
   turbopack: {
     root: __dirname,
   },
-  experimental: {
-    optimizeCss: true,
-  },
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'cdn.lightxi.com' },
-      { protocol: 'https', hostname: 'wmimg.com' },
-      { protocol: 'https', hostname: 'unavatar.webp.se' },
-      { protocol: 'https', hostname: '7.isyangs.cn' },
-      { protocol: 'https', hostname: 'www.zhilu.site' },
-      { protocol: 'https', hostname: 'blog.xiowo.net' },
-      { protocol: 'https', hostname: 'weavatar.com' },
-      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
-      { protocol: 'https', hostname: 'skillicons.dev' },
-    ],
+    formats: ['image/avif', 'image/webp'],
+    qualities: [45, 75, 82, 90],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920, 2400],
+    imageSizes: [32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 2592000,
+    localPatterns: [{ pathname: '/**' }],
   },
 }
 

@@ -1,240 +1,78 @@
-import { notFound } from 'next/navigation'
-import { format } from 'date-fns'
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { CalendarDays, FileText, Hourglass, MousePointerClick, Undo2 } from 'lucide-react'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
-import remarkDirective from 'remark-directive'
-import { getAllPosts, getPostBySlug, getPostHref } from '@/server/posts/adapters/page'
-import { remarkCallout } from '@/lib/remarkCallout'
-import { extractHeadings } from '@/lib/extractHeadings'
-import { formatDate, getReadingTime, getCategoryColorWithBorder } from '@/lib/utils'
-import { OptimizedImage, SectionDivider } from '@/components/common'
-import { mdxComponents } from '@/components/mdx'
-import { PostMetrics, PostReactions, PostStickyTitleBar, TableOfContents } from '@/components/posts'
-import { Comment } from '@/components/ui'
-import { siteConfig } from '@/config/site'
-import { absoluteUrl, toIsoDate } from '@/config/site-utils'
+import { ManagedImage } from '@/features/images'
+import { ArticleReactions } from '@/features/posts/ArticleReactions'
+import { ArticleToc } from '@/features/posts/ArticleToc'
+import { formatPostDate, getAllPosts, getPost, readingMinutes } from '@/features/posts/content'
+import { mdxComponents } from '@/features/posts/mdx-components'
+import { remarkArticleBlocks } from '@/features/posts/markdown'
+import { RelatedPosts } from '@/features/posts/RelatedPosts'
 
-interface PageProps {
-  params: Promise<{
-    year: string
-    slug: string
-  }>
-}
+interface Props { params: Promise<{ year: string; slug: string }> }
 
-export async function generateStaticParams() {
+export async function generateStaticParams() { return (await getAllPosts()).map(post => ({ year: post.year, slug: post.slug })) }
+export async function generateMetadata({ params }: Props): Promise<Metadata> { const { year, slug } = await params; const post = await getPost(year, slug); return post ? { title: post.title, description: post.excerpt, openGraph: { images: [post.cover], type: 'article', publishedTime: post.date } } : { title: '文章不存在' } }
+
+export default async function ArticlePage({ params }: Props) {
+  const { year, slug } = await params
   const posts = await getAllPosts()
-  return posts.map(post => ({
-    year: post.year,
-    slug: post.slug,
-  }))
-}
-
-export async function generateMetadata({ params }: PageProps) {
-  const { year, slug } = await params
-  const post = await getPostBySlug(year, slug)
-  
-  if (!post) {
-    return {
-      title: 'Post Not Found',
-    }
-  }
-
-  const postUrl = absoluteUrl(getPostHref(post))
-  const ogImage = absoluteUrl(post.cover || siteConfig.assets.ogImage)
-
-  return {
-    title: post.title,
-    description: post.excerpt,
-    authors: [{ name: siteConfig.author.name }],
-    openGraph: {
-      type: 'article',
-      url: postUrl,
-      title: post.title,
-      description: post.excerpt,
-      publishedTime: toIsoDate(post.date),
-      authors: [siteConfig.author.name],
-      tags: post.tags,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: post.excerpt,
-      images: [ogImage],
-    },
-    alternates: {
-      canonical: postUrl,
-    },
-  }
-}
-
-export default async function PostPage({ params }: PageProps) {
-  const { year, slug } = await params
-  const [allPosts, post] = await Promise.all([
-    getAllPosts(),
-    getPostBySlug(year, slug),
-  ])
-
-  if (!post) {
-    notFound()
-  }
-
-  const currentIndex = allPosts.findIndex(p => p.year === year && p.slug === slug)
-  const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null
-
-  const dateStr = formatDate(post.date)
-  const readingTime = getReadingTime(post.content)
-  const headings = extractHeadings(post.content)
-  const postHref = getPostHref(post)
-
-  return (
-    <div className="space-y-0 site-shell--article">
-      <PostStickyTitleBar title={post.title} backHref="/posts" />
-
-      <section>
-        <div className="mx-4 md:mx-8 py-4">
-          <Link 
-            href="/posts"
-            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
-          >
-            <span className="i-lucide-arrow-left text-xs" />
-            Back to Posts
-          </Link>
-        </div>
-        <SectionDivider />
-      </section>
-
-      <section id="article-header">
-        <div className="mx-4 md:mx-8 py-4">
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted mb-4">
-            <span className="inline-flex items-center gap-1">
-              <span className="i-lucide-calendar text-[10px]" />
-              {dateStr}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="i-lucide-clock text-[10px]" />
-              {readingTime} 分钟
-            </span>
-            {post.category && (
-              <span className={`rounded border px-2 py-0.5 text-xs ${getCategoryColorWithBorder(post.category)}`}>
-                {post.category}
-              </span>
-            )}
-            <PostMetrics
-              postId={post.id}
-              initialViewCount={post.viewCount}
-              initialLikeCount={post.likeCount}
-              commentPath={postHref}
-              readonlyMetric="comment"
-              readonly
-            />
-          </div>
-
-          <div className="flex gap-6">
-            <div className="flex-1">
-              <h1 
-                className="text-xl md:text-2xl font-bold leading-tight mb-3 bg-gradient-to-r from-foreground to-muted bg-clip-text text-transparent"
-              >
-                {post.title}
-              </h1>
-              {post.excerpt && (
-                <p className="text-sm text-muted leading-relaxed">
-                  {post.excerpt}
-                </p>
-              )}
-            </div>
-            {post.cover ? (
-              <div className="hidden md:block w-70 h-40 border border-border flex-shrink-0 bg-card overflow-hidden relative">
-                <OptimizedImage
-                  src={post.cover} 
-                  alt={post.title}
-                  fill
-                  sizes="(max-width: 768px) 0vw, 280px"
-                  unoptimized={post.cover.endsWith('.gif')}
-                  qiniuQuality={76}
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="hidden md:flex w-32 h-24 flex-shrink-0 bg-card rounded items-center justify-center">
-                <span className="i-lucide-image text-2xl text-muted" />
-              </div>
-            )}
-          </div>
-        </div>
-        <SectionDivider />
-      </section>
-
-      <section id="article-content" className="article-content-shell">
-        <aside
-          aria-label="文章表情反应"
-          className="article-reaction-rail"
-        >
-          <PostReactions
-            postId={post.id}
-            initialReactions={post.reactions ?? {}}
-          />
-        </aside>
-
-        <article className="article-reading-column">
-          <div className="px-4 pb-8 pt-7 md:px-8 mdx-content">
-            <MDXRemote
-              source={post.content}
-              components={mdxComponents}
-              options={{
-                mdxOptions: {
-                  remarkPlugins: [remarkGfm, remarkDirective, remarkCallout],
-                },
-              }}
-            />
-            <div className="xl:hidden mt-8 pt-6 border-t border-border">
-              <PostReactions
-                postId={post.id}
-                initialReactions={post.reactions ?? {}}
+  const post = posts.find(item => item.year === year && item.slug === slug)
+  if (!post) notFound()
+  const related = posts.filter((item) => item.id !== post.id && item.category === post.category).slice(0, 3)
+  return <div className="article-page">
+    <div className="article-shell">
+      <aside className="article-left"><div><ArticleToc headings={post.headings} /></div></aside>
+      <div className="article-center">
+        <Link href="/posts/" prefetch={false} className="article-back" aria-label="返回文章列表"><Undo2 /></Link>
+        <article data-postid={post.id}>
+          <header className="article-header">
+            <div className="article-cover">
+              <ManagedImage
+                src={post.cover}
+                alt=""
+                className="article-cover-glow"
+                fill
+                width={672}
+                height={378}
+                sizes="672px"
+                intent="thumbnail"
+              />
+              <ManagedImage
+                src={post.cover}
+                alt={post.title}
+                className="article-cover-image"
+                fill
+                width={672}
+                height={378}
+                sizes="(max-width: 780px) calc(100vw - 24px), 672px"
+                intent="cover"
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
+            <div className="article-meta">
+              <time dateTime={post.date}><CalendarDays />{formatPostDate(post.date)}</time>
+              <span><FileText />{post.category}</span>
+            </div>
+            <h1>{post.title}</h1>
+            <p>{post.excerpt}</p>
+            <div className="article-stats">
+              <span><MousePointerClick />0次点击</span>
+              <span><Hourglass />{readingMinutes(post.content)}分钟阅读</span>
+            </div>
+          </header>
+          <div className="article-prose">
+            <MDXRemote source={post.content} components={mdxComponents} options={{ mdxOptions: { remarkPlugins: [remarkGfm, remarkArticleBlocks(post.id)] } }} />
           </div>
         </article>
-
-        <aside className="article-toc-rail">
-          <TableOfContents headings={headings} />
-        </aside>
-      </section>
-
-      <SectionDivider />
-
-      {nextPost && (
-        <section>
-          <Link 
-            href={getPostHref(nextPost)}
-            className="block mx-4 md:mx-8 py-8 group"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <span className="text-xs text-muted mb-2 block">Next Post</span>
-                <h3 className="text-lg font-semibold text-foreground group-hover:opacity-70 transition-opacity">
-                  {nextPost.title}
-                </h3>
-                <span className="text-xs text-muted mt-1 block">
-                  {format(new Date(nextPost.date), 'MMM dd, yyyy')}
-                </span>
-              </div>
-              <span className="i-lucide-arrow-right text-muted group-hover:text-foreground transition-colors" />
-            </div>
-          </Link>
-          <SectionDivider />
-        </section>
-      )}
-
-      <Comment path={postHref} postId={post.id} />
+      </div>
+      <aside className="article-right"><div><ArticleReactions /></div></aside>
     </div>
-  )
+
+    <RelatedPosts posts={related} />
+  </div>
 }

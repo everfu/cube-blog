@@ -1,6 +1,12 @@
-import { createAtomResponse } from '@/server/feeds/adapters/http'
-import { getAllPosts } from '@/server/posts/adapters/page'
+import { buildAtomFeed, createDocumentResponse } from '@/features/feeds/documents'
+import { getAllPosts } from '@/features/posts/content'
+
+export const dynamic = 'force-static'
 
 export async function GET() {
-  return createAtomResponse(await getAllPosts())
+  return createDocumentResponse(
+    buildAtomFeed(await getAllPosts()),
+    'atom.xml',
+    'application/atom+xml',
+  )
 }

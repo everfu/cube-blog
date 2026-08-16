@@ -1,0 +1,15 @@
+.site-footer { padding: 110px 0 32px; }
+.footer-newsletter { padding: 40px 0; border-top: 1px solid var(--line); }
+.footer-newsletter .newsletter { max-width: 448px; margin-inline: auto; }
+.footer-bottom { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 30px; padding-top: 34px; color: var(--muted); }
+.footer-bottom strong { color: var(--text); font-size: 14px; }
+.footer-bottom p { margin: 3px 0 0; font-size: 11px; }
+.footer-bottom nav { display: flex; gap: 20px; font-size: 12px; }
+.footer-social { justify-self: end; display: flex; gap: 9px; }
+.footer-social a { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; }
+.footer-social svg { width: 15px; }
+.not-found { min-height: 100vh; display: grid; place-content: center; text-align: center; background: var(--bg); color: var(--text); padding: 24px; }
+.not-found > span { color: var(--orange); font: 12px var(--font-mono); }
+.not-found h1 { margin: 16px 0 6px; font-size: clamp(38px, 7vw, 76px); letter-spacing: -.06em; }
+.not-found p { margin: 0; color: var(--muted); }
+.not-found a { width: fit-content; margin: 24px auto 0; border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; font-size: 13px; }

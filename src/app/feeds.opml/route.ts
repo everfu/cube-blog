@@ -1,5 +1,7 @@
-import { createOpmlResponse } from '@/server/feeds/adapters/http'
+import { buildOpml, createDocumentResponse } from '@/features/feeds/documents'
 
-export async function GET() {
-  return await createOpmlResponse('feeds.opml')
+export const dynamic = 'force-static'
+
+export function GET() {
+  return createDocumentResponse(buildOpml(), 'feeds.opml', 'text/x-opml')
 }
